@@ -223,6 +223,19 @@ CLASSIFICAÇÃO E CONCLUSÃO:
 - Estágio 3 — Máquina validada
 - Estágio 4 — Pronta para escalar
 
+METODOLOGIA ESTRATÉGICA ANDRESSA MALLINSK:
+1. Funil não é ferramenta, é sequência lógica. Se você não sabe dizer qual é o próximo passo que o lead deve dar após cada interação, então você não tem funil, tem esforço solto.
+2. Sem números não existe diagnóstico. Todo negócio precisa rastrear: faturamento, lucro, leads semanais, conversas iniciadas, propostas enviadas e vendas.
+3. Validação de Oferta: Antes de tentar escalar um funil ou campanha, a oferta precisa estar validada com promessa clara, diferenciação e preço coerente. Caso contrário, tráfego e funis só aceleram o prejuízo.
+4. Foco Único: Um funil não pode ter dois objetivos ao mesmo tempo. Ou ele gera leads qualificados, ou ele converte em vendas. Misturar os dois gera confusão.
+5. Aquisição: Não foque em volume de seguidores ou curtidas, foque em trazer as pessoas certas. A mensagem nos canais de aquisição deve conectar diretamente com a dor que sua oferta resolve.
+6. Qualificação: Se muitos leads entram mas poucos avançam, há falha de qualificação. Implemente 3 perguntas fixas de triagem para filtrar curiosos antes de fazer qualquer proposta comercial.
+7. Conversão e Proposta: Apresente propostas somente após gerar consciência de dor, impacto e desejo de solução. Se o lead ainda tem dúvidas se "funciona", a conversa não está madura para fechamento.
+8. Dependência Comercial: Se toda a operação comercial e fechamento depende exclusivamente de você, você tem um emprego caro, não uma empresa escalável. Crie processos e playbooks mínimos para poder delegar.
+9. Follow-up: O dinheiro está no follow-up. Não deixe leads sem retorno. Desenhe a rotina comercial com intervalos claros para reengajamento.
+10. Tráfego Pago: Só coloque tráfego pago em um funil que já está validado e convertendo organicamente. Tráfego em funil com furos é desperdício de caixa.
+11. Posicionamento no Instagram: O conteúdo do perfil deve preparar o seguidor para a compra. Muito seguidor com pouca venda indica desalinhamento de mensagem (falta de roteiro de qualificação, proposta clara e follow-up).
+
 VOZ: Andressa Mallinsk pura. Direta. Estratégica. Sem robô.`;
 
 const IMAGE_PROTECTION_SYSTEM = `🔒 COMANDO INTERNO — PRESERVAÇÃO DE IDENTIDADE VISUAL
@@ -861,27 +874,79 @@ FORMATO OBRIGATÓRIO:
 
 Seja direta, firme e acionável.`;
 
+      const analysisSystemInstruction = `Você é A Estrategista, especialista em posicionamento digital de alta autoridade baseada na metodologia Andressa Mallinsk.
+Analise o perfil utilizando estritamente estes princípios estratégicos:
+1. O perfil do Instagram deve funcionar como um canal de atração qualificada. A bio deve conter uma promessa de transformação clara, direcionada para as dores reais do público-alvo da mentorada.
+2. A foto de perfil deve passar sofisticação, profissionalismo e alta percepção de valor/autoridade imediata.
+3. Os destaques não devem ser coleções aleatórias. Eles precisam formar um funil de qualificação e vendas estruturado (Quem sou eu, Depoimentos/Provas Sociais, Oferta e Como Comprar/CTA).
+4. O feed deve combinar conteúdo estratégico com CTAs claros para o direct. Ter seguidores mas não vender indica falta de CTA ou mensagem desconectada com a oferta comercial.
+5. Seja direta, firme, focada em lucro e passe a orientação prática imediata como a mentora Andressa Mallinsk faria.`;
+
       const { text: analysisText } = await callGemini(
         env.GEMINI_API_KEY, "gemini-2.0-flash",
-        "Você é A Estrategista, especialista em posicionamento digital baseada na metodologia Andressa Mallinsk.",
+        analysisSystemInstruction,
         [], analysisPrompt, image
       );
 
-      // Tentar gerar imagem melhorada com gemini-2.0-flash-preview-image-generation
+      // Tentar gerar mock-up melhorado com modelos de consistência de imagem e fallbacks
       let afterImageUrl = `data:image/jpeg;base64,${image.includes(",") ? image.split(",")[1] : image}`;
       try {
-        const { images } = await callGemini(
-          env.GEMINI_API_KEY, "gemini-2.0-flash-preview-image-generation",
-          IMAGE_PROTECTION_SYSTEM, [],
-          "Crie uma versão melhorada deste perfil do Instagram: bio mais clara, elementos mais profissionais, aparência de autoridade. Mantenha a identidade 100% fiel.",
-          image
-        );
+        const mockupPrompt = `Generate a high-quality professional mock-up of an improved Instagram profile layout for the person in the reference screenshot. 
+1. Profile Picture: Preserve the exact face, gender, age, hair, skin tone, ethnicity, and identity of the person shown in the reference photo. Place them in a professional corporate portrait with elegant lighting.
+2. Color Palette & Visual Identity: Dressed in clothing and featuring background branding highlights using the requested palette: "${visualIdentity}".
+3. Layout: A clean, high-authority Instagram profile mockup with an elegant bio in Portuguese and a grid of professional, cohesive photos featuring the same person.
+4. Style: Editorial photography, modern luxury, premium aesthetic.`;
+
+        let images = [];
+
+        // Try gemini-3-pro-image-preview for identity consistency
+        try {
+          const res = await callGemini(
+            env.GEMINI_API_KEY, "gemini-3-pro-image-preview",
+            IMAGE_PROTECTION_SYSTEM, [], mockupPrompt, image
+          );
+          if (res.images && res.images.length > 0) {
+            images = res.images;
+          }
+        } catch (e) {
+          console.log("Mockup generation with gemini-3-pro-image-preview failed, trying fallback...", e.message);
+        }
+
+        // Fallback 1: gemini-3.1-flash-image-preview
+        if (images.length === 0) {
+          try {
+            const res = await callGemini(
+              env.GEMINI_API_KEY, "gemini-3.1-flash-image-preview",
+              IMAGE_PROTECTION_SYSTEM, [], mockupPrompt, image
+            );
+            if (res.images && res.images.length > 0) {
+              images = res.images;
+            }
+          } catch (e) {
+            console.log("Mockup generation with gemini-3.1-flash-image-preview failed...", e.message);
+          }
+        }
+
+        // Fallback 2: gemini-2.5-flash-image
+        if (images.length === 0) {
+          try {
+            const res = await callGemini(
+              env.GEMINI_API_KEY, "gemini-2.5-flash-image",
+              IMAGE_PROTECTION_SYSTEM, [], mockupPrompt, image
+            );
+            if (res.images && res.images.length > 0) {
+              images = res.images;
+            }
+          } catch (e) {
+            console.log("Mockup generation with gemini-2.5-flash-image failed...", e.message);
+          }
+        }
+
         if (images.length > 0) {
           afterImageUrl = `data:${images[0].mimeType};base64,${images[0].data}`;
         }
       } catch (imgErr) {
-        // Fallback: retorna imagem original se geração falhar
-        console.log("Geração de imagem não disponível:", imgErr.message);
+        console.log("Suggested profile image generation failed:", imgErr.message);
       }
 
       return json({ analysisText, imageUrl: afterImageUrl });
