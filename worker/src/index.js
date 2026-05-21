@@ -849,38 +849,80 @@ O que fazer após enviar o script.`;
       const { image, visualIdentity = "Não informada" } = body;
       if (!image) return error("Imagem obrigatória");
 
-      const analysisPrompt = `Analise este print de perfil do Instagram e forneça análise estratégica.
+      // 1. Extrair detalhes do perfil para personalização do mockup
+      let profileDetails = {
+        username: "usuario",
+        appearance: "a professional person",
+        niche: "empreendedora"
+      };
 
-DADOS DO USUÁRIO: ${visualIdentity}
+      try {
+        const extractPrompt = `Analise a imagem de perfil do Instagram fornecida e extraia as seguintes informações em formato JSON puro:
+{
+  "username": "o nome de usuário do Instagram visível no topo (ex: carlasanara_)",
+  "appearance": "descrição física detalhada em inglês da pessoa que aparece na foto de perfil e no feed (gênero, cor e estilo de cabelo, tom de pele, idade aproximada, estilo de roupa) para ser usada como prompt de geração de imagem. Ex: 'a beautiful brunette woman in her 30s with medium skin tone and dark shoulder-length hair'",
+  "niche": "nicho/profissão principal descrita na bio em português (ex: Estrategista de Vendas, Mentora de Empreendedoras)"
+}
+Responda APENAS com o JSON puro, sem markdown, sem explicações.`;
 
-FORMATO OBRIGATÓRIO:
-📸 FOTO DE PERFIL
-[análise]
+        const { text: extractText } = await callGemini(
+          env.GEMINI_API_KEY, "gemini-2.0-flash",
+          "Você é um extrator de metadados e analista de imagem preciso.",
+          [], extractPrompt, image
+        );
 
-📝 BIO
-[análise]
+        const match = extractText.match(/\{[\s\S]*\}/);
+        if (match) {
+          profileDetails = JSON.parse(match[0]);
+        }
+      } catch (err) {
+        console.log("Erro ao extrair detalhes do perfil para o mockup:", err.message);
+      }
 
-👤 NOME DE USUÁRIO
-[análise]
+      // 2. Análise Estratégica utilizando o Método Andressa Mallinsk
+      const analysisPrompt = `Analise este print de perfil do Instagram sob a ótica estratégica do Método Andressa Mallinsk.
 
-⭐ DESTAQUES
-[análise]
+DADOS DE CONTEXTO E PALETA ENVIADOS PELA MENTORADA:
+"${visualIdentity}"
 
-📱 FEED
-[análise]
+FORMATO OBRIGATÓRIO DE RETORNO:
 
-🎯 MISSÃO DO DIA
-[ação específica para hoje]
+🦁 DIAGNÓSTICO DE POSICIONAMENTO E CONVERSÃO
+Estágio Estimado do Negócio: [Classificar em: Instável / Operação manual / Máquina validada / Pronta para escalar]
+Gargalo Dominante no Perfil: [Mensagem / Oferta / Aquisição / Qualificação / Conversão]
+Onde o dinheiro está travado no perfil: [Etapa específica, ex: Bio sem promessa clara, foto com baixa autoridade, destaques sem funil de vendas, feed sem CTA para o direct]
 
-Seja direta, firme e acionável.`;
+📸 AVALIAÇÃO VISUAL E ELEMENTOS
+- FOTO DE PERFIL: [Avaliação da imagem, postura, iluminação, e nível de autoridade e sofisticação]
+- NOME E BIO: [Avaliação da clareza da promessa, diferenciação e direcionamento de dores]
+- DESTAQUES (FUNIL): [Avaliação se existe um funil estruturado nos destaques: Quem Sou, Prova Social, Oferta, CTA]
+- FEED E ATRAÇÃO: [Avaliação da linha editorial, qualidade visual, paleta de cores ("${visualIdentity}") e consistência de CTAs]
 
-      const analysisSystemInstruction = `Você é A Estrategista, especialista em posicionamento digital de alta autoridade baseada na metodologia Andressa Mallinsk.
-Analise o perfil utilizando estritamente estes princípios estratégicos:
-1. O perfil do Instagram deve funcionar como um canal de atração qualificada. A bio deve conter uma promessa de transformação clara, direcionada para as dores reais do público-alvo da mentorada.
-2. A foto de perfil deve passar sofisticação, profissionalismo e alta percepção de valor/autoridade imediata.
-3. Os destaques não devem ser coleções aleatórias. Eles precisam formar um funil de qualificação e vendas estruturado (Quem sou eu, Depoimentos/Provas Sociais, Oferta e Como Comprar/CTA).
-4. O feed deve combinar conteúdo estratégico com CTAs claros para o direct. Ter seguidores mas não vender indica falta de CTA ou mensagem desconectada com a oferta comercial.
-5. Seja direta, firme, focada em lucro e passe a orientação prática imediata como a mentora Andressa Mallinsk faria.`;
+🎯 PRIORIDADE ESTRATÉGICA ÚNICA
+[Definir 1 foco central imediato para destravar as vendas através do perfil]
+
+🗓️ PLANO DE EXECUÇÃO DE 7 DIAS (SEM PROMESSA, COM MÉTODO)
+- Dia 1-2: [Ação direta para ajustar foto de perfil, bio ou destaques]
+- Dia 3-4: [Ajuste na linha editorial ou roteiro de Stories/Reels com CTA para o direct]
+- Dia 5-7: [Execução prática com métricas comerciais]
+Métrica a acompanhar: [Ex: Número de DMs iniciadas na semana]
+
+Seja direta, firme, chame de Leoa e use o tom da mentora Andressa Mallinsk (sem saudações genéricas, sem promessas fáceis, direto ao ponto).`;
+
+      const analysisSystemInstruction = `Você é A Estrategista, mentorada por ANDRESSA MALLINSK. Seu cérebro é estratégico, focado em lucro imediato, curto e direto ao ponto. Você não é um robô de respostas simpáticas, você é uma Mentora de Negócios de Elite.
+
+DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
+1. O perfil do Instagram é a sua vitrine de alta autoridade e atração qualificada. Seguidor sem venda é barulho operacional.
+2. Foto de perfil precisa exalar sofisticação, profissionalismo e alta percepção de valor. Se for amadora, aponte sem rodeios.
+3. A Bio precisa de uma Promessa Única de Valor (PUV): Para quem é, qual dor resolve, qual transformação e qual o próximo passo (CTA).
+4. Os Destaques não podem ser aleatórios. Eles são um funil passivo:
+   - Destaque 1: Quem sou eu (autoridade/conexão)
+   - Destaque 2: Prova Social (depoimentos/resultados)
+   - Destaque 3: Oferta (o produto/serviço detalhado)
+   - Destaque 4: CTA (como comprar ou ir para o direct)
+5. O Feed precisa conectar a mensagem de conteúdo diretamente à conversão comercial, com CTAs claros levando para a conversa individual (Direct/WhatsApp).
+6. Classifique sempre o estágio do negócio da mentorada de acordo com as evidências visuais e a descrição fornecida.
+7. Escreva de forma assertiva, firme, empoderando a mentorada ("Leoa") mas confrontando os gargalos comerciais de frente.`;
 
       const { text: analysisText } = await callGemini(
         env.GEMINI_API_KEY, "gemini-2.0-flash",
@@ -888,14 +930,15 @@ Analise o perfil utilizando estritamente estes princípios estratégicos:
         [], analysisPrompt, image
       );
 
-      // Tentar gerar mock-up melhorado com modelos de consistência de imagem e fallbacks
+      // 3. Tentar gerar mock-up melhorado customizado usando os metadados extraídos
       let afterImageUrl = `data:image/jpeg;base64,${image.includes(",") ? image.split(",")[1] : image}`;
       try {
-        const mockupPrompt = `Generate a high-quality professional mock-up of an improved Instagram profile layout for the person in the reference screenshot. 
-1. Profile Picture: Preserve the exact face, gender, age, hair, skin tone, ethnicity, and identity of the person shown in the reference photo. Place them in a professional corporate portrait with elegant lighting.
-2. Color Palette & Visual Identity: Dressed in clothing and featuring background branding highlights using the requested palette: "${visualIdentity}".
-3. Layout: A clean, high-authority Instagram profile mockup with an elegant bio in Portuguese and a grid of professional, cohesive photos featuring the same person.
-4. Style: Editorial photography, modern luxury, premium aesthetic.`;
+        const mockupPrompt = `Generate a high-quality professional mock-up of an improved Instagram profile layout for the user "${profileDetails.username || 'user'}".
+1. Profile Picture: Feature a high-authority professional headshot of ${profileDetails.appearance || 'a professional person'} in the circular profile picture. She must look confident, professional, and elegant.
+2. Username & Bio: The username at the top of the profile must be "${profileDetails.username || 'user'}". The bio must be an elegant professional bio in Portuguese for a "${profileDetails.niche || 'Digital Strategist'}" using direct, high-converting language.
+3. Color Palette & Visual Identity: The person must be dressed in clothing and the background/highlights branding must feature the requested palette: "${visualIdentity}".
+4. Grid Layout: A clean, cohesive Instagram feed grid showing 6 to 9 professional photos featuring the exact same person (${profileDetails.appearance || 'a professional person'}) in different executive poses, office environments, or lifestyle contexts.
+5. Style: Editorial photography, modern luxury, premium aesthetic.`;
 
         let images = [];
 
