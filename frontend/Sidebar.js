@@ -6,7 +6,6 @@ export default function Sidebar({ activeView, setActiveView, user, onLogout }) {
     { id: 'diagnostico', label: 'Diagnóstico de Negócio', icon: FileText },
     { id: 'estrategista', label: 'Estrategista Digital', icon: Brain },
     { id: 'analise', label: 'Análise de Perfil', icon: User },
-    { id: 'ensaio', label: 'Criar Ensaio Fotográfico', icon: Camera },
     { id: 'biblioteca', label: 'Biblioteca de Conteúdo', icon: BookOpen },
     { id: 'objecao', label: 'Exterminador de Objeção', icon: Shield },
     { id: 'funil', label: 'Funil de Vendas', icon: TrendingUp },
