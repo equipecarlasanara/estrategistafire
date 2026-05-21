@@ -1,11 +1,10 @@
-import { Brain, Target, FileText, User, Camera, BookOpen, Shield, TrendingUp, Edit3, LogOut } from 'lucide-react';
+import { Brain, Target, FileText, User, BookOpen, Shield, TrendingUp, Edit3, LogOut } from 'lucide-react';
 
 const nav = [
   { id: 'estrategista', label: 'Estrategista Digital', icon: Brain },
   { id: 'dashboard', label: 'Dashboard de Metas', icon: Target },
   { id: 'prompts', label: 'Biblioteca de Prompts', icon: FileText },
   { id: 'analise', label: 'Análise de Perfil', icon: User },
-  { id: 'ensaio', label: 'Criar Ensaio', icon: Camera },
   { id: 'biblioteca', label: 'Biblioteca de Conteúdo', icon: BookOpen },
   { id: 'objecao', label: 'Exterminador de Objeção', icon: Shield },
   { id: 'funil', label: 'Funil de Vendas', icon: TrendingUp },

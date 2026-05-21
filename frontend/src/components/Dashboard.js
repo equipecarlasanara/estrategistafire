@@ -4,7 +4,6 @@ import EstrategistaDigital from './EstrategistaDigital';
 import GoalsDashboard from './GoalsDashboard';
 import ContentLibrary from './ContentLibrary';
 import ProfileAnalysis from './ProfileAnalysis';
-import PhotoshootCreator from './PhotoshootCreator';
 import ObjectionExterminator from './ObjectionExterminator';
 import SalesFunnel from './SalesFunnel';
 import ImageEditor from './ImageEditor';
@@ -15,7 +14,6 @@ const views = {
   dashboard: GoalsDashboard,
   prompts: PromptLibrary,
   analise: ProfileAnalysis,
-  ensaio: PhotoshootCreator,
   biblioteca: ContentLibrary,
   objecao: ObjectionExterminator,
   funil: SalesFunnel,
