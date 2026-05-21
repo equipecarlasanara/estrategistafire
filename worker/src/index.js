@@ -900,25 +900,6 @@ Seja direta, firme e acionável.`;
 
       const base64Img = baseImage?.base64 || baseImage;
       let personDescription = "";
-      if (base64Img) {
-        try {
-          const descPrompt = `Analyze the person's face in this image and provide a highly detailed physical description in English for an AI image generator (like Imagen) to recreate this exact person's face and likeness as closely as possible.
-Be extremely detailed about:
-1. Face details: precise face shape, forehead, cheekbones, chin, jawline.
-2. Hair: exact texture, type (e.g. curly, coiled, afro-textured, straight, wavy), color, length, volume, parting.
-3. Eyes: shape, eyelid type, color, eyebrows thickness and arch.
-4. Nose: bridge shape, width, nostril size.
-5. Mouth: lip thickness, shape, smile, teeth visibility.
-6. Skin: exact color tone, complexion, undertone, facial details.
-7. Ethnicity, gender, and approximate age.
-
-Write the description in a single paragraph, focusing entirely on facial likeness. Do not mention the background or clothes. Write ONLY in English.`;
-          const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", "", [], descPrompt, base64Img);
-          personDescription = text;
-        } catch (e) {
-          console.log("Erro ao obter descrição fisionômica:", e.message);
-        }
-      }
 
       let englishPrompt = prompt;
       try {
@@ -941,15 +922,82 @@ Write the description in a single paragraph, focusing entirely on facial likenes
       const results = await Promise.allSettled(
         Array.from({ length: count }, async (_, i) => {
           const style = styles[i % styles.length];
-          let fullPrompt = `A high-quality professional portrait, editorial style. Scenario: ${englishPrompt}. Style: ${style}.`;
-          if (personDescription) {
-            fullPrompt += ` The subject of the photo is a person with the following appearance: ${personDescription}.`;
+          let fullPrompt = `Generate a high-quality professional photoshoot image of the person in the reference image. Scenario: ${englishPrompt}. Style: ${style}. You MUST maintain 100% of the facial features, skin tone, hair, age, gender, and exact facial identity of the person in the reference image. The output image must be a high-resolution, realistic photo of this person in the scenario.`;
+
+          let images = [];
+
+          // Try gemini-3-pro-image-preview
+          try {
+            const res = await callGemini(
+              env.GEMINI_API_KEY, "gemini-3-pro-image-preview",
+              IMAGE_PROTECTION_SYSTEM, [], fullPrompt, base64Img
+            );
+            if (res.images && res.images.length > 0) {
+              images = res.images;
+            }
+          } catch (e) {
+            console.log("Failed generating with gemini-3-pro-image-preview, trying fallback...", e.message);
           }
-          fullPrompt += ` Ensure highly realistic facial features, natural skin texture, accurate facial details, keeping the identity consistent with the description.`;
-          const { images } = await callGemini(
-            env.GEMINI_API_KEY, "imagen-4.0-generate-001",
-            null, [], fullPrompt
-          );
+
+          // Fallback 1: gemini-3.1-flash-image-preview
+          if (images.length === 0) {
+            try {
+              const res = await callGemini(
+                env.GEMINI_API_KEY, "gemini-3.1-flash-image-preview",
+                IMAGE_PROTECTION_SYSTEM, [], fullPrompt, base64Img
+              );
+              if (res.images && res.images.length > 0) {
+                images = res.images;
+              }
+            } catch (e) {
+              console.log("Failed generating with gemini-3.1-flash-image-preview, trying fallback...", e.message);
+            }
+          }
+
+          // Fallback 2: gemini-2.5-flash-image
+          if (images.length === 0) {
+            try {
+              const res = await callGemini(
+                env.GEMINI_API_KEY, "gemini-2.5-flash-image",
+                IMAGE_PROTECTION_SYSTEM, [], fullPrompt, base64Img
+              );
+              if (res.images && res.images.length > 0) {
+                images = res.images;
+              }
+            } catch (e) {
+              console.log("Failed generating with gemini-2.5-flash-image, trying fallback...", e.message);
+            }
+          }
+
+          // Fallback 3: Imagen 4 text-to-image
+          if (images.length === 0) {
+            try {
+              if (!personDescription && base64Img) {
+                try {
+                  const descPrompt = `Analyze the person's face in this image and provide a highly detailed physical description in English for an AI image generator (like Imagen) to recreate this exact person's face and likeness as closely as possible. Detailed: face shape, jawline, hair texture/style/color, eyes shape/color, nose, lips, skin tone, gender, age. Write ONLY the description in English.`;
+                  const resDesc = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", "", [], descPrompt, base64Img);
+                  personDescription = resDesc.text;
+                } catch (descErr) {
+                  console.log("Lazy description extraction failed:", descErr.message);
+                }
+              }
+              let textPrompt = `A high-quality professional portrait, editorial style. Scenario: ${englishPrompt}. Style: ${style}.`;
+              if (personDescription) {
+                textPrompt += ` The subject of the photo is a person with the following appearance: ${personDescription}.`;
+              }
+              textPrompt += ` Ensure highly realistic facial features, natural skin texture, accurate facial details, keeping the identity consistent with the description.`;
+              const res = await callGemini(
+                env.GEMINI_API_KEY, "imagen-4.0-generate-001",
+                null, [], textPrompt
+              );
+              if (res.images && res.images.length > 0) {
+                images = res.images;
+              }
+            } catch (e) {
+              console.log("Failed generating with Imagen 4", e.message);
+            }
+          }
+
           if (images.length > 0) return { id: i + 1, imageUrl: `data:${images[0].mimeType};base64,${images[0].data}` };
           return null;
         })
@@ -975,19 +1023,85 @@ Write the description in a single paragraph, focusing entirely on facial likenes
       const base64Img = image?.base64 || image;
       if (!base64Img || !prompt) return error("Imagem e prompt são obrigatórios");
 
-      let editPrompt = prompt;
+      let englishPrompt = prompt;
       try {
-        const descPrompt = `Analyze the provided image and write a detailed scene description in English that incorporates the following changes requested by the user: "${prompt}". The final description should be optimized for a text-to-image AI generator to produce the updated scene. Write ONLY the final description in English.`;
-        const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", "", [], descPrompt, base64Img);
-        editPrompt = text;
+        const translatePrompt = `Translate this image editing request/prompt to English, making it natural and descriptive for an AI image generator: "${prompt}". Respond only with the English translation.`;
+        const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", "", [], translatePrompt);
+        englishPrompt = text;
       } catch (e) {
-        console.log("Erro ao descrever edição:", e.message);
+        console.log("Translation failed:", e.message);
       }
 
-      const { images } = await callGemini(
-        env.GEMINI_API_KEY, "imagen-4.0-generate-001",
-        null, [], editPrompt
-      );
+      let fullEditPrompt = `Based on the provided reference image, create an updated version incorporating the following changes: "${englishPrompt}". You MUST preserve the exact face and identity of the person, skin tone, hair, and general scene structure, changing only the elements requested.`;
+
+      let images = [];
+
+      // Try gemini-3-pro-image-preview
+      try {
+        const res = await callGemini(
+          env.GEMINI_API_KEY, "gemini-3-pro-image-preview",
+          IMAGE_PROTECTION_SYSTEM, [], fullEditPrompt, base64Img
+        );
+        if (res.images && res.images.length > 0) {
+          images = res.images;
+        }
+      } catch (e) {
+        console.log("Edit with gemini-3-pro-image-preview failed, trying fallback...", e.message);
+      }
+
+      // Fallback 1: gemini-3.1-flash-image-preview
+      if (images.length === 0) {
+        try {
+          const res = await callGemini(
+            env.GEMINI_API_KEY, "gemini-3.1-flash-image-preview",
+            IMAGE_PROTECTION_SYSTEM, [], fullEditPrompt, base64Img
+          );
+          if (res.images && res.images.length > 0) {
+            images = res.images;
+          }
+        } catch (e) {
+          console.log("Edit with gemini-3.1-flash-image-preview failed, trying fallback...", e.message);
+        }
+      }
+
+      // Fallback 2: gemini-2.5-flash-image
+      if (images.length === 0) {
+        try {
+          const res = await callGemini(
+            env.GEMINI_API_KEY, "gemini-2.5-flash-image",
+            IMAGE_PROTECTION_SYSTEM, [], fullEditPrompt, base64Img
+          );
+          if (res.images && res.images.length > 0) {
+            images = res.images;
+          }
+        } catch (e) {
+          console.log("Edit with gemini-2.5-flash-image failed, trying fallback...", e.message);
+        }
+      }
+
+      // Fallback 3: Imagen 4 text-to-image
+      if (images.length === 0) {
+        try {
+          let editPrompt = prompt;
+          try {
+            const descPrompt = `Analyze the provided image and write a detailed scene description in English that incorporates the following changes requested by the user: "${prompt}". The final description should be optimized for a text-to-image AI generator to produce the updated scene. Write ONLY the final description in English.`;
+            const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", "", [], descPrompt, base64Img);
+            editPrompt = text;
+          } catch (e) {
+            console.log("Erro ao descrever edição:", e.message);
+          }
+
+          const res = await callGemini(
+            env.GEMINI_API_KEY, "imagen-4.0-generate-001",
+            null, [], editPrompt
+          );
+          if (res.images && res.images.length > 0) {
+            images = res.images;
+          }
+        } catch (e) {
+          console.log("Edit with Imagen 4 failed:", e.message);
+        }
+      }
 
       if (images.length > 0) {
         return json({ imageUrl: `data:${images[0].mimeType};base64,${images[0].data}` });
