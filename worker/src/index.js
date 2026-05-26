@@ -1220,6 +1220,160 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
     }
   }
 
+  // ---- HISTÓRICO DE IMAGENS COM AUTO-EXCLUSÃO DE 7 DIAS ----
+  if (path === "/image-history" && method === "POST") {
+    const userId = await authenticate(request, env);
+    if (!userId) return error("Token inválido", 401);
+    const body = await request.json();
+    const { image_url, prompt } = body;
+    if (!image_url || !prompt) return error("URL da imagem e prompt são obrigatórios");
+    const id = uuid();
+    const ts = now();
+    await dbRun(env,
+      "INSERT INTO image_history (id, user_id, image_url, prompt, created_at) VALUES (?, ?, ?, ?, ?)",
+      [id, userId, image_url, prompt, ts]
+    );
+    return json({ id, user_id: userId, image_url, prompt, created_at: ts });
+  }
+
+  if (path === "/image-history" && method === "GET") {
+    const userId = await authenticate(request, env);
+    if (!userId) return error("Token inválido", 401);
+    
+    // Limpar imagens geradas há mais de 7 dias
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const sevenDaysAgoStr = sevenDaysAgo.toISOString();
+    await dbRun(env, "DELETE FROM image_history WHERE user_id = ? AND created_at < ?", [userId, sevenDaysAgoStr]);
+
+    const history = await dbQuery(env, "SELECT * FROM image_history WHERE user_id = ? ORDER BY created_at DESC LIMIT 50", [userId]);
+    return json(history);
+  }
+
+  // ---- EXTERMINADOR DE OBJEÇÕES VINCULADO AO CRM ----
+  if (path === "/objections" && method === "POST") {
+    const userId = await authenticate(request, env);
+    if (!userId) return error("Token inválido", 401);
+    const body = await request.json();
+    const { lead_id = null, image_url = null, gargalo, script, missao } = body;
+    if (!gargalo || !script || !missao) return error("Gargalo, script e missão são obrigatórios");
+    const id = uuid();
+    const ts = now();
+    await dbRun(env,
+      "INSERT INTO objection_history (id, user_id, lead_id, image_url, gargalo, script, missao, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [id, userId, lead_id, image_url, gargalo, script, missao, ts]
+    );
+    return json({ id, user_id: userId, lead_id, image_url, gargalo, script, missao, created_at: ts });
+  }
+
+  const objLeadMatch = path.match(/^\/objections\/lead\/(.+)$/);
+  if (objLeadMatch && method === "GET") {
+    const userId = await authenticate(request, env);
+    if (!userId) return error("Token inválido", 401);
+    const leadId = objLeadMatch[1];
+    const history = await dbQuery(env,
+      "SELECT * FROM objection_history WHERE user_id = ? AND lead_id = ? ORDER BY created_at DESC LIMIT 50",
+      [userId, leadId]
+    );
+    return json(history);
+  }
+
+  // ---- CONFIGURAÇÃO GOOGLE DRIVE ----
+  if (path === "/auth/google-drive" && method === "PATCH") {
+    const userId = await authenticate(request, env);
+    if (!userId) return error("Token inválido", 401);
+    const body = await request.json();
+    const { google_drive_link } = body;
+    await dbRun(env, "UPDATE users SET google_drive_link = ? WHERE id = ?", [google_drive_link, userId]);
+    return json({ success: true, google_drive_link });
+  }
+
+  // ---- FOTO DE PERFIL / AVATAR DA IA ----
+  if (path === "/auth/avatar" && method === "POST") {
+    const userId = await authenticate(request, env);
+    if (!userId) return error("Token inválido", 401);
+    const body = await request.json();
+    const { avatar_url } = body;
+    if (!avatar_url) return error("avatar_url é obrigatório");
+    await dbRun(env, "UPDATE users SET avatar_url = ? WHERE id = ?", [avatar_url, userId]);
+    return json({ success: true, avatar_url });
+  }
+
+  // ---- RECOVERY DE CONTA (FORGOT PASSWORD) ----
+  if (path === "/auth/forgot-password" && method === "POST") {
+    const body = await request.json();
+    const { email } = body;
+    if (!email) return error("E-mail é obrigatório");
+
+    const [user] = await dbQuery(env, "SELECT id, name FROM users WHERE email = ?", [email]);
+    if (!user) {
+      return json({ message: "Se o e-mail estiver cadastrado, um link de recuperação será enviado." });
+    }
+
+    const exp = Math.floor(Date.now() / 1000) + 15 * 60; // 15 min
+    const token = await signJWT({ user_id: user.id, purpose: "reset-password", exp }, env.JWT_SECRET);
+    
+    const origin = request.headers.get("Origin") || "https://andressamallinsk-ia.pages.dev";
+    const resetLink = `${origin}/reset-password?token=${token}`;
+
+    const resendApiKey = env.RESEND_API_KEY;
+    if (resendApiKey) {
+      const emailHtml = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #080808; color: #E0E0E0; border: 1px solid #1E0505; border-radius: 12px;">
+          <h2 style="color: #C0392B; text-align: center; font-size: 24px;">Recuperação de Senha</h2>
+          <p>Olá, <strong>${user.name}</strong>,</p>
+          <p>Recebemos uma solicitação para redefinir a senha da sua conta no sistema <strong>IA Estrategista</strong>.</p>
+          <p>Clique no botão abaixo para escolher uma nova senha (este link expira em 15 minutos):</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetLink}" style="background: linear-gradient(135deg, #7A1010, #C0392B); color: white; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 8px; box-shadow: 0 4px 15px rgba(192,57,43,0.3);">Redefinir Minha Senha</a>
+          </div>
+          <p style="color: #666; font-size: 12px; border-top: 1px solid #1A0505; padding-top: 20px; margin-top: 30px;">Se você não solicitou essa alteração, pode ignorar este e-mail com segurança.</p>
+        </div>
+      `;
+
+      try {
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            from: "IA Estrategista <onboarding@resend.dev>",
+            to: email,
+            subject: "Recuperação de Senha — IA Estrategista",
+            html: emailHtml
+          })
+        });
+        if (!res.ok) {
+          const resText = await res.text();
+          console.error("Erro na API do Resend:", resText);
+        }
+      } catch (err) {
+        console.error("Erro de envio de email:", err.message);
+      }
+    } else {
+      console.warn("Chave RESEND_API_KEY não configurada. Link de recuperação:", resetLink);
+    }
+
+    return json({ message: "Se o e-mail estiver cadastrado, um link de recuperação será enviado." });
+  }
+
+  if (path === "/auth/reset-password" && method === "POST") {
+    const body = await request.json();
+    const { token, new_password } = body;
+    if (!token || !new_password) return error("Token e nova senha são obrigatórios");
+
+    const payload = await verifyJWT(token, env.JWT_SECRET);
+    if (!payload || payload.purpose !== "reset-password") {
+      return error("Token inválido ou expirado", 400);
+    }
+
+    const hashed = await hashPassword(new_password);
+    await dbRun(env, "UPDATE users SET password = ? WHERE id = ?", [hashed, payload.user_id]);
+    return json({ success: true, message: "Senha redefinida com sucesso!" });
+  }
+
   return error("Rota não encontrada", 404);
 }
 

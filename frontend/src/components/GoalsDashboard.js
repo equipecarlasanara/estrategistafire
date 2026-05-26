@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { Plus, CheckCircle, Circle, Trash2, TrendingUp, Target, Users, Edit2, X, ExternalLink, Zap } from 'lucide-react';
+import { getApiUrl } from '../lib/api';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = getApiUrl();
 const auth = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const STAGES = [

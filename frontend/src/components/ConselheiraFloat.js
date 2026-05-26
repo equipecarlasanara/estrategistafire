@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { Send, Heart, X, Minimize2, Trash2 } from 'lucide-react';
+import { getApiUrl } from '../lib/api';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const API = getApiUrl();
 const STORAGE_KEY = 'estrategista_float_history';
 const MAX_MESSAGES_TO_AI = 10;
 

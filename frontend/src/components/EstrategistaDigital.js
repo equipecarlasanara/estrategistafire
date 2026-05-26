@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Send, Upload, FileText, X, Trash2, CheckCircle, Camera, Cloud, Link2 } from 'lucide-react';
+import { getApiUrl } from '../lib/api';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = getApiUrl();
 const auth = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
 export default function EstrategistaDigital({ user, onUpdateUser }) {

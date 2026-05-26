@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Send, Download } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import { getApiUrl } from '../lib/api';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = getApiUrl();
 const auth = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
 export default function SalesFunnel({ user }) {

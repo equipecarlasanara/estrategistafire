@@ -1,8 +1,9 @@
 import { useRef } from 'react';
 import axios from 'axios';
 import { Brain, Target, FileText, User, BookOpen, Shield, TrendingUp, Edit3, LogOut, Camera } from 'lucide-react';
+import { getApiUrl } from '../lib/api';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = getApiUrl();
 const auth = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
 const nav = [

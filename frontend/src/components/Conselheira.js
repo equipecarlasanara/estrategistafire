@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { Send, Heart } from 'lucide-react';
+import { getApiUrl } from '../lib/api';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const API = getApiUrl();
 
 const getAuthHeaders = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }

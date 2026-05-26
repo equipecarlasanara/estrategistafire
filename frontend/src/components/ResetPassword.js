@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { getApiUrl } from '../lib/api';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+const BACKEND_URL = getApiUrl().replace(/\/api$/, '');
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -34,7 +35,7 @@ export default function ResetPassword() {
     try {
       const response = await axios.post(`${BACKEND_URL}/api/auth/reset-password`, {
         token,
-        password
+        new_password: password
       });
       setMessage(response.data.message || 'Senha redefinida com sucesso! Redirecionando...');
       setTimeout(() => {

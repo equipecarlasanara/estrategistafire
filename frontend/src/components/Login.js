@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { getApiUrl } from '../lib/api';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = getApiUrl();
 
 export default function Login({ onLogin }) {
   const [mode, setMode] = useState('login'); // 'login', 'register', 'forgot'

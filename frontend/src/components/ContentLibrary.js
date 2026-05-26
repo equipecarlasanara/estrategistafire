@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
 import axios from 'axios';
 import { BookOpen, Sparkles } from 'lucide-react';
+import { getApiUrl } from '../lib/api';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = getApiUrl();
 const auth = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 const TABS = ['reels', 'carrossel', 'postEstatico', 'stories', 'ads'];
 const TAB_LABELS = { reels: 'Reels', carrossel: 'Carrossel', postEstatico: 'Post Estático', stories: 'Stories', ads: 'Criativos (ADS)' };
