@@ -19,8 +19,10 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import jwt
 import bcrypt
-from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent, PDFContent
 import base64
+from email_service import send_recovery_email
+
 
 
 ROOT_DIR = Path(__file__).parent
@@ -46,6 +48,76 @@ else:
 
 app = FastAPI()
 
+@app.on_event("startup")
+async def startup_event():
+    # Executar migrations do banco de dados D1 se aplicável
+    if hasattr(db, '_query'):
+        try:
+            logger.info("Executando migrations do banco de dados Cloudflare D1...")
+            
+            # Criar tabela action_plans
+            await db._query("""
+            CREATE TABLE IF NOT EXISTS action_plans (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL UNIQUE,
+                filename TEXT NOT NULL,
+                content TEXT NOT NULL,
+                uploaded_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            );
+            """)
+            
+            # Criar tabela image_history
+            await db._query("""
+            CREATE TABLE IF NOT EXISTS image_history (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                image_url TEXT NOT NULL,
+                prompt TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            );
+            """)
+            
+            # Criar tabela objection_history
+            await db._query("""
+            CREATE TABLE IF NOT EXISTS objection_history (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                lead_id TEXT,
+                image_url TEXT,
+                gargalo TEXT NOT NULL,
+                script TEXT NOT NULL,
+                missao TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL
+            );
+            """)
+            
+            # Adicionar avatar_url a users
+            try:
+                await db._query("ALTER TABLE users ADD COLUMN avatar_url TEXT;")
+                logger.info("Coluna avatar_url adicionada/verificada.")
+            except Exception as e:
+                err_str = str(e).lower()
+                if "duplicate" not in err_str and "already exists" not in err_str:
+                    logger.warning(f"Erro ao adicionar coluna avatar_url: {e}")
+
+            # Adicionar google_drive_link a users
+            try:
+                await db._query("ALTER TABLE users ADD COLUMN google_drive_link TEXT;")
+                logger.info("Coluna google_drive_link adicionada/verificada.")
+            except Exception as e:
+                err_str = str(e).lower()
+                if "duplicate" not in err_str and "already exists" not in err_str:
+                    logger.warning(f"Erro ao adicionar coluna google_drive_link: {e}")
+                    
+            logger.info("Migrations executadas com sucesso!")
+        except Exception as e:
+            logger.error(f"Falha fatal ao executar migrations do banco: {e}")
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -66,7 +138,10 @@ class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     email: EmailStr
     name: str
+    avatar_url: Optional[str] = None
+    google_drive_link: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -519,19 +594,94 @@ async def get_funnel_stats(user_id: str = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao calcular funil: {str(e)}")
 
+# --- ACTION PLAN ENDPOINTS ---
+class ActionPlanCreate(BaseModel):
+    filename: str
+    content: str
+    is_pdf: Optional[bool] = True
+
+@api_router.get("/action-plan")
+async def get_action_plan(user_id: str = Depends(get_current_user)):
+    try:
+        plan = await db.action_plans.find_one({"user_id": user_id})
+        if not plan:
+            return None
+        return {
+            "filename": plan.get("filename"),
+            "uploaded_at": plan.get("uploaded_at")
+        }
+    except Exception as e:
+        logger.error(f"Erro ao obter plano de ação: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/action-plan")
+async def save_action_plan(data: ActionPlanCreate, user_id: str = Depends(get_current_user)):
+    try:
+        now_str = datetime.now(timezone.utc).isoformat()
+        existing = await db.action_plans.find_one({"user_id": user_id})
+        
+        plan_dict = {
+            "user_id": user_id,
+            "filename": data.filename,
+            "content": data.content,
+            "uploaded_at": now_str
+        }
+        
+        if existing:
+            await db.action_plans.update_one({"user_id": user_id}, {"$set": plan_dict})
+        else:
+            plan_dict["id"] = str(uuid.uuid4())
+            await db.action_plans.insert_one(plan_dict)
+            
+        return {"filename": data.filename, "uploaded_at": now_str}
+    except Exception as e:
+        logger.error(f"Erro ao salvar plano de ação: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/action-plan")
+async def delete_action_plan(user_id: str = Depends(get_current_user)):
+    try:
+        await db.action_plans.delete_one({"user_id": user_id})
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Erro ao deletar plano de ação: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.post("/ai/build-funnel")
 async def build_funnel(chat_msg: ChatMessage, user_id: str = Depends(get_current_user)):
     try:
         session_id = chat_msg.session_id or f"funnel_{user_id}"
         
-        funnel_instruction = """Você é A Estrategista, especialista em construir funis de vendas de alto impacto baseados na metodologia Andressa Mallinsk.
+        # Carregar conhecimento estratégico do cérebro da Andressa Mallinsk
+        cerebro_rules = ""
+        try:
+            cerebro_path = ROOT_DIR / "knowledge" / "cerebro.jsonl"
+            if cerebro_path.exists():
+                with open(cerebro_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if line.strip():
+                            rule = json.loads(line)
+                            # Filtrar diretrizes de funil, conversão e vendas
+                            inst = rule.get("instruction", "").lower()
+                            inp = rule.get("input", "").lower()
+                            if "funil" in inst or "convers" in inst or "venda" in inst or "funil" in inp:
+                                cerebro_rules += f"\n- Diretriz de Posicionamento: {rule.get('instruction')}\n  Feedback da Andressa: {rule.get('output')}\n"
+        except Exception as e:
+            logger.warning(f"Erro ao ler cerebro.jsonl no funil: {e}")
+
+        funnel_instruction = f"""Você é A Estrategista, especialista em construir funis de vendas de alto impacto baseados na metodologia Andressa Mallinsk.
 
 REGRAS DE OURO PARA O FUNIL:
 - Funil não é ferramenta, é sequência lógica. Se o lead não sabe o próximo passo, o funil falhou.
 - Aquisição não é volume, é perfil certo focado na dor que a oferta resolve.
 - Qualificação é obrigatória: defina sempre 3 perguntas de triagem para filtrar curiosos.
 - Conversão só acontece após consciência de dor e desejo de solução.
-- Follow-up é onde o dinheiro está: sempre inclua réguas de contato.
+- Follow-up é onde o dinheiro está: sempre inclua réguas de contato comercial.
+
+Você deve usar as seguintes diretrizes extraídas da memória de Andressa Mallinsk para guiar suas respostas:
+{cerebro_rules}
+
+Você DEVE ler com atenção o nicho, produto, público-alvo e preço descritos pela leoa especialista e criar um funil de vendas 100% personalizado e detalhado para o caso dela. Não dê sugestões genéricas ou templates padrão.
 
 FORMATO DE RESPOSTA OBRIGATÓRIO (Markdown):
 
@@ -544,13 +694,13 @@ FORMATO DE RESPOSTA OBRIGATÓRIO (Markdown):
 - Métrica: CPL Sugerido (Custo por Lead) baseado no mercado.
 
 ⚡ ETAPA 2: QUALIFICAÇÃO (FILTRO DE LEOA)
-- Perguntas de Triagem: [Liste 3 perguntas obrigatórias]
-- Atendimento: [Como conduzir para gerar consciência de dor]
+- Perguntas de Triagem: [Liste 3 perguntas obrigatórias e personalizadas para filtrar curiosos]
+- Atendimento: [Como conduzir para gerar consciência de dor no direct/whatsapp]
 
 💰 ETAPA 3: CONVERSÃO E FECHAMENTO
 - Gatilho para Proposta: [Qual sinal o lead dá quando está pronto?]
 - Formato da Proposta: [Ex: Call de 15min / PDF no WhatsApp]
-- Follow-up: [Régua de 24h, 48h e 7 dias]
+- Follow-up: [Régua de 24h, 48h e 7 dias personalizada]
 
 📊 VIABILIDADE E NÚMEROS
 - Taxa de Conversão sugerida: [Média para o nicho]
@@ -558,18 +708,46 @@ FORMATO DE RESPOSTA OBRIGATÓRIO (Markdown):
 
 Seja firme, direta e estratégica. Foque em lucro, não em curtidas."""
         
+        # Recuperar histórico de chat do banco para a sessão de funil
+        history_doc = await db.chat_history.find_one({"session_id": session_id})
+        history = history_doc.get("history", []) if history_doc else []
+
+        # Carregar plano de ação do banco
+        file_contents = []
+        plan_doc = await db.action_plans.find_one({"user_id": user_id})
+        if plan_doc and plan_doc.get("content"):
+            file_contents.append(PDFContent(plan_doc["content"]))
+            
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=session_id,
-            system_message=funnel_instruction
+            system_message=funnel_instruction,
+            history=history
         )
         chat.with_model("gemini", "gemini-2.0-flash")
         
-        message = UserMessage(text=chat_msg.message)
+        message = UserMessage(text=chat_msg.message, file_contents=file_contents)
         response = await chat.send_message(message)
+        
+        # Salvar histórico atualizado no banco de dados
+        new_history = chat.history + [
+            {"role": "user", "parts": [chat_msg.message]},
+            {"role": "model", "parts": [response]}
+        ]
+        
+        if history_doc:
+            await db.chat_history.update_one({"session_id": session_id}, {"$set": {"history": new_history}})
+        else:
+            await db.chat_history.insert_one({
+                "session_id": session_id,
+                "user_id": user_id,
+                "history": new_history,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            
         return {"response": response, "session_id": session_id}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao construir funil: {str(e)}")
 
 @api_router.post("/content", response_model=ContentItem)
 async def create_content(content_data: ContentItemCreate, user_id: str = Depends(get_current_user)):
@@ -740,6 +918,15 @@ async def handle_unified_chat(chat_msg: ChatMessage, user_id: str):
         history_doc = await db.chat_history.find_one({"session_id": session_id})
         history = history_doc.get("history", []) if history_doc else []
         
+        # Recuperar Plano de Ação se houver
+        file_contents = []
+        try:
+            plan_doc = await db.action_plans.find_one({"user_id": user_id})
+            if plan_doc and plan_doc.get("content"):
+                file_contents.append(PDFContent(plan_doc["content"]))
+        except Exception as e:
+            logger.warning(f"Erro ao carregar PDF do plano no chat: {e}")
+
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=session_id,
@@ -748,7 +935,7 @@ async def handle_unified_chat(chat_msg: ChatMessage, user_id: str):
         )
         chat.with_model("gemini", "gemini-2.0-flash")
         
-        message = UserMessage(text=chat_msg.message)
+        message = UserMessage(text=chat_msg.message, file_contents=file_contents)
         response = await chat.send_message(message)
         
         # Salvar histórico atualizado
@@ -774,6 +961,166 @@ async def handle_unified_chat(chat_msg: ChatMessage, user_id: str):
         return {"response": response, "session_id": session_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro na Estrategista: {str(e)}")
+
+# --- CHAT HISTORY ENDPOINT ---
+@api_router.get("/ai/chat")
+async def get_chat_history(session_id: Optional[str] = None, user_id: str = Depends(get_current_user)):
+    sid = session_id or f"unified_{user_id}"
+    try:
+        history_doc = await db.chat_history.find_one({"session_id": sid})
+        if not history_doc:
+            return []
+        return history_doc.get("history", [])
+    except Exception as e:
+        logger.error(f"Erro ao carregar histórico: {e}")
+        return []
+
+# --- IMAGE HISTORY ENDPOINTS (7-DAY EXPIRY) ---
+class ImageHistoryCreate(BaseModel):
+    image_url: str
+    prompt: str
+
+@api_router.post("/image-history")
+async def add_image_history(data: ImageHistoryCreate, user_id: str = Depends(get_current_user)):
+    try:
+        now_str = datetime.now(timezone.utc).isoformat()
+        item = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "image_url": data.image_url,
+            "prompt": data.prompt,
+            "created_at": now_str
+        }
+        await db.image_history.insert_one(item)
+        return {"success": True, "id": item["id"]}
+    except Exception as e:
+        logger.error(f"Erro ao salvar imagem no histórico: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/image-history")
+async def get_image_history(user_id: str = Depends(get_current_user)):
+    try:
+        # Excluir automaticamente registros com mais de 7 dias
+        limit_date = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+        if hasattr(db, '_query'):
+            await db._query("DELETE FROM image_history WHERE user_id = ? AND created_at < ?", [user_id, limit_date])
+            
+        images = await db.image_history.find({"user_id": user_id}).to_list(100)
+        return images
+    except Exception as e:
+        logger.error(f"Erro ao obter histórico de imagens: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- OBJECTIONS LINKED TO CRM ---
+class ObjectionCreate(BaseModel):
+    lead_id: Optional[str] = None
+    image_url: Optional[str] = None
+    gargalo: str
+    script: str
+    missao: str
+
+@api_router.post("/objections")
+async def add_objection_history(data: ObjectionCreate, user_id: str = Depends(get_current_user)):
+    try:
+        item = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "lead_id": data.lead_id,
+            "image_url": data.image_url,
+            "gargalo": data.gargalo,
+            "script": data.script,
+            "missao": data.missao,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.objection_history.insert_one(item)
+        return {"success": True, "id": item["id"]}
+    except Exception as e:
+        logger.error(f"Erro ao salvar objeção: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/objections/lead/{lead_id}")
+async def get_lead_objections(lead_id: str, user_id: str = Depends(get_current_user)):
+    try:
+        objections = await db.objection_history.find({"user_id": user_id, "lead_id": lead_id}).to_list(100)
+        return objections
+    except Exception as e:
+        logger.error(f"Erro ao carregar objeções: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- GOOGLE DRIVE SETTINGS ---
+class GoogleDriveUpdate(BaseModel):
+    google_drive_link: str
+
+@api_router.patch("/auth/google-drive")
+async def update_google_drive(data: GoogleDriveUpdate, user_id: str = Depends(get_current_user)):
+    try:
+        await db.users.update_one({"id": user_id}, {"google_drive_link": data.google_drive_link})
+        return {"success": True, "google_drive_link": data.google_drive_link}
+    except Exception as e:
+        logger.error(f"Erro ao salvar link do Drive: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- AVATAR UPLOAD ---
+class AvatarUpdate(BaseModel):
+    avatar_url: str
+
+@api_router.post("/auth/avatar")
+async def update_avatar(data: AvatarUpdate, user_id: str = Depends(get_current_user)):
+    try:
+        await db.users.update_one({"id": user_id}, {"avatar_url": data.avatar_url})
+        return {"success": True, "avatar_url": data.avatar_url}
+    except Exception as e:
+        logger.error(f"Erro ao salvar avatar: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- PASSWORD RECOVERY FLOW ---
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: ForgotPasswordRequest):
+    try:
+        user_doc = await db.users.find_one({"email": data.email})
+        if not user_doc:
+            return {"success": True, "message": "Se o e-mail existir, um link de recuperação será enviado."}
+            
+        payload = {
+            "email": data.email,
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=15)
+        }
+        token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        
+        # O link aponta para o frontend (porta 3000)
+        recovery_link = f"http://localhost:3000/reset-password?token={token}"
+        
+        name = user_doc.get("name", "Leoa")
+        send_recovery_email(data.email, name, recovery_link)
+        
+        return {"success": True, "message": "E-mail de recuperação enviado com sucesso!"}
+    except Exception as e:
+        logger.error(f"Erro no forgot-password: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: ResetPasswordRequest):
+    try:
+        payload = jwt.decode(data.token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        email = payload["email"]
+        
+        hashed = hash_password(data.password)
+        await db.users.update_one({"email": email}, {"password": hashed})
+        
+        return {"success": True, "message": "Senha redefinida com sucesso!"}
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=400, detail="O link de recuperação expirou.")
+    except Exception as e:
+        logger.error(f"Erro no reset-password: {e}")
+        raise HTTPException(status_code=400, detail="Token de recuperação inválido.")
+
 
 async def process_tasks_from_response(response: str, user_id: str):
     """Extrai tarefas do formato 'PROJETAR_TAREFA: Titulo | Descrição' e salva no banco."""

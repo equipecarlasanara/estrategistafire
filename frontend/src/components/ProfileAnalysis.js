@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Upload, User } from 'lucide-react';
 
@@ -6,11 +6,37 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const auth = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
 export default function ProfileAnalysis() {
-  const [image, setImage] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [visualIdentity, setVisualIdentity] = useState('');
+  const [image, setImage] = useState(() => localStorage.getItem('profile_image') || null);
+  const [preview, setPreview] = useState(() => localStorage.getItem('profile_preview') || null);
+  const [visualIdentity, setVisualIdentity] = useState(() => localStorage.getItem('profile_visualIdentity') || '');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(() => {
+    const saved = localStorage.getItem('profile_result');
+    try {
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if (image) localStorage.setItem('profile_image', image);
+    else localStorage.removeItem('profile_image');
+  }, [image]);
+
+  useEffect(() => {
+    if (preview) localStorage.setItem('profile_preview', preview);
+    else localStorage.removeItem('profile_preview');
+  }, [preview]);
+
+  useEffect(() => {
+    localStorage.setItem('profile_visualIdentity', visualIdentity);
+  }, [visualIdentity]);
+
+  useEffect(() => {
+    if (result) localStorage.setItem('profile_result', JSON.stringify(result));
+    else localStorage.removeItem('profile_result');
+  }, [result]);
 
   const handleFile = (e) => {
     const file = e.target.files?.[0];

@@ -4,24 +4,30 @@ import axios from 'axios';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Login({ onLogin }) {
-  const [mode, setMode] = useState('login');
+  const [mode, setMode] = useState('login'); // 'login', 'register', 'forgot'
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const submit = async (e) => {
     e.preventDefault();
-    setError(''); setLoading(true);
+    setError(''); setMessage(''); setLoading(true);
     try {
-      const isReg = mode === 'register';
-      const { data } = await axios.post(`${API}/auth/${isReg ? 'register' : 'login'}`,
-        isReg ? form : { email: form.email, password: form.password }
-      );
-      onLogin(data.access_token, data.user);
+      if (mode === 'forgot') {
+        const { data } = await axios.post(`${API}/auth/forgot-password`, { email: form.email });
+        setMessage(data.message || 'Se o e-mail existir, um link de recuperação será enviado.');
+      } else {
+        const isReg = mode === 'register';
+        const { data } = await axios.post(`${API}/auth/${isReg ? 'register' : 'login'}`,
+          isReg ? form : { email: form.email, password: form.password }
+        );
+        onLogin(data.access_token, data.user);
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Erro ao entrar. Verifique seus dados.');
+      setError(err.response?.data?.detail || 'Erro ao processar requisição. Tente novamente.');
     } finally { setLoading(false); }
   };
 
@@ -45,6 +51,11 @@ export default function Login({ onLogin }) {
               {error}
             </div>
           )}
+          {message && (
+            <div style={{ background: 'rgba(62,207,142,0.1)', border: '1px solid rgba(62,207,142,0.3)', color: '#3ECF8E', borderRadius: '8px', padding: '12px 16px', marginBottom: '20px', fontSize: '13px' }}>
+              {message}
+            </div>
+          )}
 
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {mode === 'register' && (
@@ -59,21 +70,38 @@ export default function Login({ onLogin }) {
               <input className="fire-input" type="email" required value={form.email}
                 onChange={e => set('email', e.target.value)} placeholder="seu@email.com" />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', color: '#666', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px' }}>Senha</label>
-              <input className="fire-input" type="password" required value={form.password}
-                onChange={e => set('password', e.target.value)} placeholder="••••••••" />
-            </div>
+            {mode !== 'forgot' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '11px', color: '#666', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>Senha</label>
+                  {mode === 'login' && (
+                    <button type="button" onClick={() => { setMode('forgot'); setError(''); setMessage(''); }}
+                      style={{ background: 'none', border: 'none', color: '#C0606A', fontSize: '11px', cursor: 'pointer', padding: 0 }}>
+                      Esqueceu a senha?
+                    </button>
+                  )}
+                </div>
+                <input className="fire-input" type="password" required value={form.password}
+                  onChange={e => set('password', e.target.value)} placeholder="••••••••" />
+              </div>
+            )}
             <button className="fire-btn" type="submit" disabled={loading} style={{ marginTop: '8px', width: '100%', padding: '14px' }}>
-              {loading ? 'Entrando...' : mode === 'register' ? 'CRIAR CONTA' : 'ENTRAR'}
+              {loading ? 'Processando...' : mode === 'register' ? 'CRIAR CONTA' : mode === 'forgot' ? 'RECUPERAR CONTA' : 'ENTRAR'}
             </button>
           </form>
 
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <button onClick={() => { setMode(m => m === 'login' ? 'register' : 'login'); setError(''); }}
-              style={{ background: 'none', border: 'none', color: '#C0606A', fontSize: '13px', cursor: 'pointer' }}>
-              {mode === 'login' ? 'Não tem acesso? Registre-se' : 'Já tem acesso? Faça login'}
-            </button>
+            {mode === 'forgot' ? (
+              <button onClick={() => { setMode('login'); setError(''); setMessage(''); }}
+                style={{ background: 'none', border: 'none', color: '#C0606A', fontSize: '13px', cursor: 'pointer' }}>
+                Voltar para o Login
+              </button>
+            ) : (
+              <button onClick={() => { setMode(m => m === 'login' ? 'register' : 'login'); setError(''); setMessage(''); }}
+                style={{ background: 'none', border: 'none', color: '#C0606A', fontSize: '13px', cursor: 'pointer' }}>
+                {mode === 'login' ? 'Não tem acesso? Registre-se' : 'Já tem acesso? Faça login'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -82,3 +110,4 @@ export default function Login({ onLogin }) {
     </div>
   );
 }
+

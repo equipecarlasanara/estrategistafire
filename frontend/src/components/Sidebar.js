@@ -1,4 +1,9 @@
-import { Brain, Target, FileText, User, BookOpen, Shield, TrendingUp, Edit3, LogOut } from 'lucide-react';
+import { useRef } from 'react';
+import axios from 'axios';
+import { Brain, Target, FileText, User, BookOpen, Shield, TrendingUp, Edit3, LogOut, Camera } from 'lucide-react';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const auth = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
 const nav = [
   { id: 'estrategista', label: 'Estrategista Digital', icon: Brain },
@@ -11,15 +16,52 @@ const nav = [
   { id: 'editor', label: 'Editor de Fotos', icon: Edit3 },
 ];
 
-export default function Sidebar({ active, setActive, user, onLogout }) {
+export default function Sidebar({ active, setActive, user, onLogout, onUpdateUser }) {
+  const fileInputRef = useRef(null);
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64Avatar = reader.result;
+        const { data } = await axios.post(`${API}/auth/avatar`, { avatar_url: base64Avatar }, auth());
+        if (data.success && onUpdateUser) {
+          onUpdateUser({ ...user, avatar_url: base64Avatar });
+          alert('Foto de perfil atualizada com sucesso!');
+        }
+      } catch (err) {
+        alert('Erro ao atualizar foto de perfil.');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <aside style={{ width: '220px', background: '#0C0C0C', borderRight: '1px solid #1A0505', display: 'flex', flexDirection: 'column', padding: '20px 12px', flexShrink: 0 }}>
 
-      {/* Logo */}
-      <div style={{ textAlign: 'center', paddingBottom: '20px', borderBottom: '1px solid #1A0505', marginBottom: '16px' }}>
+      {/* Logo e Perfil */}
+      <div style={{ textAlign: 'center', paddingBottom: '20px', borderBottom: '1px solid #1A0505', marginBottom: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <img src="/logo-fire-branco.png" alt="Estrategista Fire"
-          style={{ width: '130px', filter: 'drop-shadow(0 0 12px rgba(192,57,43,0.4))' }} />
-        {user && <p style={{ color: '#444', fontSize: '11px', marginTop: '8px', letterSpacing: '0.05em' }}>{user.name}</p>}
+          style={{ width: '130px', filter: 'drop-shadow(0 0 12px rgba(192,57,43,0.4))', marginBottom: '12px' }} />
+        
+        {user && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '50%', border: '2px solid #C0392B', overflow: 'hidden', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                 onClick={() => fileInputRef.current?.click()}
+                 title="Alterar foto de perfil">
+              <img src={user.avatar_url || '/lion-profile.jpg'} alt="Sua Foto" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', opacity: 0, transition: 'opacity 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                   onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                   onMouseLeave={e => e.currentTarget.style.opacity = 0}>
+                <Camera size={14} style={{ color: '#fff' }} />
+              </div>
+            </div>
+            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} style={{ display: 'none' }} />
+            <p style={{ color: '#E0E0E0', fontSize: '12px', fontWeight: '500', margin: 0 }}>{user.name}</p>
+          </div>
+        )}
       </div>
 
       {/* Nav */}

@@ -1,17 +1,22 @@
 
 import os
 import google.generativeai as genai
-from typing import List, Optional
+from typing import List, Optional, Any
 import base64
 
 class ImageContent:
     def __init__(self, image_base64: str):
         self.image_base64 = image_base64
 
+class PDFContent:
+    def __init__(self, pdf_base64: str):
+        self.pdf_base64 = pdf_base64
+
 class UserMessage:
-    def __init__(self, text: str, file_contents: Optional[List[ImageContent]] = None):
+    def __init__(self, text: str, file_contents: Optional[List[Any]] = None):
         self.text = text
         self.file_contents = file_contents or []
+
 
 class LlmChat:
     def __init__(self, api_key: str, session_id: str, system_message: str = "", history: List = None):
@@ -50,6 +55,9 @@ class LlmChat:
                 if isinstance(content, ImageContent):
                      img_data = content.image_base64.split(",")[-1] if "," in content.image_base64 else content.image_base64
                      parts.append({"mime_type": "image/jpeg", "data": base64.b64decode(img_data)})
+                elif isinstance(content, PDFContent):
+                     pdf_data = content.pdf_base64.split(",")[-1] if "," in content.pdf_base64 else content.pdf_base64
+                     parts.append({"mime_type": "application/pdf", "data": base64.b64decode(pdf_data)})
 
             model = genai.GenerativeModel(
                 model_name=self.model_name,
@@ -71,6 +79,9 @@ class LlmChat:
                 if isinstance(content, ImageContent):
                      img_data = content.image_base64.split(",")[-1] if "," in content.image_base64 else content.image_base64
                      parts.append({"mime_type": "image/jpeg", "data": base64.b64decode(img_data)})
+                elif isinstance(content, PDFContent):
+                     pdf_data = content.pdf_base64.split(",")[-1] if "," in content.pdf_base64 else content.pdf_base64
+                     parts.append({"mime_type": "application/pdf", "data": base64.b64decode(pdf_data)})
 
             model = genai.GenerativeModel(
                 model_name=self.model_name,

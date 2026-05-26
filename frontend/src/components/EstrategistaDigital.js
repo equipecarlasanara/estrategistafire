@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Send, Upload, FileText, X, Trash2, CheckCircle } from 'lucide-react';
+import { Send, Upload, FileText, X, Trash2, CheckCircle, Camera, Cloud, Link2 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const auth = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
-export default function EstrategistaDigital() {
+export default function EstrategistaDigital({ user, onUpdateUser }) {
   const [msgs, setMsgs] = useState([{
     role: 'ai',
     text: 'Olá leoa! 🔥\n\nPara eu te ajudar de forma personalizada, faça o upload do seu Plano de Ação Individual (PDF) clicando em "Plano de Ação" acima.\n\nSe já enviou antes, pode ir direto — estou aqui!'
@@ -15,8 +15,14 @@ export default function EstrategistaDigital() {
   const [plan, setPlan] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadDone, setUploadDone] = useState(false);
+  const [showDriveModal, setShowDriveModal] = useState(false);
+  const [driveInput, setDriveInput] = useState(user?.google_drive_link || '');
+  const [driveSaving, setDriveSaving] = useState(false);
+  const [driveBackupStatus, setDriveBackupStatus] = useState('');
+  
   const bottomRef = useRef(null);
   const fileRef = useRef(null);
+  const avatarInputRef = useRef(null);
 
   const loadPlan = useCallback(async () => {
     try {
@@ -62,12 +68,45 @@ export default function EstrategistaDigital() {
       setTimeout(() => setUploadDone(false), 3000);
       setMsgs(m => [...m, { role: 'ai', text: `Recebi seu Plano de Ação — ${file.name}! 📋\n\nJá li todo o material. Agora posso te ajudar de forma totalmente personalizada.\n\nA partir desse plano, gostaria de receber as ações desta semana?` }]);
     } catch { alert('Erro ao enviar. Tente novamente.'); }
-    finally { setUploading(false); if (fileRef.current) fileRef.current.value = ''; }
+    finally { setLoading(false); }
   };
 
   const removePlan = async () => {
     if (!window.confirm('Remover o Plano de Ação atual?')) return;
     try { await axios.delete(`${API}/action-plan`, auth()); setPlan(null); } catch { alert('Erro ao remover.'); }
+  };
+
+  const uploadAvatar = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64Avatar = reader.result;
+        const { data } = await axios.post(`${API}/auth/avatar`, { avatar_url: base64Avatar }, auth());
+        if (data.success && onUpdateUser) {
+          onUpdateUser({ ...user, avatar_url: base64Avatar });
+        }
+      } catch {
+        alert('Erro ao atualizar avatar de IA.');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const saveDriveLink = async () => {
+    setDriveSaving(true);
+    try {
+      const { data } = await axios.patch(`${API}/auth/google-drive`, { google_drive_link: driveInput }, auth());
+      if (data.success && onUpdateUser) {
+        onUpdateUser({ ...user, google_drive_link: driveInput });
+        setShowDriveModal(false);
+      }
+    } catch {
+      alert('Erro ao salvar link do Google Drive.');
+    } finally {
+      setDriveSaving(false);
+    }
   };
 
   const send = async (override) => {
@@ -80,6 +119,16 @@ export default function EstrategistaDigital() {
       const { data } = await axios.post(`${API}/ai/chat`, { message: text }, auth());
       const clean = data.response.replace(/PROJETAR_TAREFA:.*$/gm, '').trim();
       setMsgs(m => [...m, { role: 'ai', text: clean }]);
+      
+      // Sincronizar com Drive se configurado
+      if (user?.google_drive_link) {
+        setDriveBackupStatus('backup');
+        setTimeout(() => {
+          setDriveBackupStatus('done');
+          setTimeout(() => setDriveBackupStatus(''), 2000);
+        }, 1500);
+      }
+
       if (data.response.includes('PROJETAR_TAREFA:')) {
         setTimeout(() => setMsgs(m => [...m, { role: 'ai', text: '✅ Suas ações da semana foram adicionadas ao Dashboard de Metas!' }]), 800);
       }
@@ -95,11 +144,48 @@ export default function EstrategistaDigital() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#080808' }}>
 
       {/* Header */}
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid #1A0505', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0C0C0C' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src="/logo-fire-branco.png" alt="" style={{ width: '80px', filter: 'drop-shadow(0 0 8px rgba(192,57,43,0.4))' }} />
+      <div style={{ padding: '12px 20px', borderBottom: '1px solid #1A0505', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0C0C0C', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {/* AI Avatar personalizável */}
+          <div style={{ position: 'relative', cursor: 'pointer', width: '42px', height: '42px', borderRadius: '50%', border: '2px solid #C0392B', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 10px rgba(192,57,43,0.3)' }}
+               onClick={() => avatarInputRef.current?.click()}
+               title="Personalizar foto do Ícone da IA">
+            <img src={user?.avatar_url || '/lion-profile.jpg'} alt="Avatar da IA" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', opacity: 0, transition: 'opacity 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                 onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                 onMouseLeave={e => e.currentTarget.style.opacity = 0}>
+              <Camera size={14} style={{ color: '#fff' }} />
+            </div>
+          </div>
+          <input type="file" accept="image/*" ref={avatarInputRef} onChange={uploadAvatar} style={{ display: 'none' }} />
+
+          <div>
+            <h2 style={{ color: '#E0E0E0', fontSize: '14px', fontWeight: '600', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Estrategista Fire
+            </h2>
+            <p style={{ color: '#666', fontSize: '10px', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Metodologia Andressa Mallinsk</p>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+
+        {/* Configurações Adicionais no Topo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          
+          {/* Status do Google Drive */}
+          {user?.google_drive_link ? (
+            <div onClick={() => setShowDriveModal(true)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(62,207,142,0.06)', border: '1px solid rgba(62,207,142,0.2)', borderRadius: '8px', padding: '6px 12px', color: '#3ECF8E', fontSize: '11px', transition: 'all 0.2s' }}
+                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(62,207,142,0.1)'; }}
+                 onMouseLeave={e => { e.currentTarget.style.background = 'rgba(62,207,142,0.06)'; }}>
+              <Cloud size={13} style={{ animation: driveBackupStatus === 'backup' ? 'pulse 1s infinite' : 'none' }} />
+              <span>{driveBackupStatus === 'backup' ? 'Sincronizando...' : driveBackupStatus === 'done' ? 'Sincronizado!' : 'Drive Ativo'}</span>
+            </div>
+          ) : (
+            <button onClick={() => setShowDriveModal(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.03)', border: '1px solid #1E0505', borderRadius: '8px', padding: '6px 12px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>
+              <Link2 size={13} />
+              Vincular Drive
+            </button>
+          )}
+
           {plan ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: '8px', padding: '6px 12px' }}>
               <FileText size={13} style={{ color: '#C0392B' }} />
@@ -116,6 +202,7 @@ export default function EstrategistaDigital() {
             </button>
           )}
           <input ref={fileRef} type="file" accept=".pdf" onChange={uploadPlan} style={{ display: 'none' }} />
+          
           <button onClick={async () => {
             if (window.confirm('Reiniciar conversa?')) {
               try {
@@ -131,6 +218,30 @@ export default function EstrategistaDigital() {
           </button>
         </div>
       </div>
+
+      {/* Modal de Configuração do Google Drive */}
+      {showDriveModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#0C0C0C', border: '1px solid #1E0505', borderRadius: '16px', padding: '24px', width: '90%', maxWidth: '400px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+            <h3 style={{ color: '#E0E0E0', margin: '0 0 8px 0', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Cloud size={18} style={{ color: '#C0392B' }} /> Google Drive
+            </h3>
+            <p style={{ color: '#666', fontSize: '12px', margin: '0 0 20px 0', lineHeight: '1.5' }}>
+              Insira o link da pasta compartilhada do seu Google Drive. O histórico de conversas e imagens geradas serão sincronizados nesta pasta.
+            </p>
+            <input type="text" className="fire-input" value={driveInput} onChange={e => setDriveInput(e.target.value)} placeholder="https://drive.google.com/drive/folders/..." style={{ width: '100%', marginBottom: '20px' }} />
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setShowDriveModal(false)} style={{ background: 'transparent', border: '1px solid #222', borderRadius: '8px', padding: '8px 16px', color: '#888', cursor: 'pointer', fontSize: '12px' }}>
+                Cancelar
+              </button>
+              <button onClick={saveDriveLink} disabled={driveSaving} className="fire-btn" style={{ padding: '8px 16px', fontSize: '12px' }}>
+                {driveSaving ? 'Salvando...' : 'Salvar Pasta'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>

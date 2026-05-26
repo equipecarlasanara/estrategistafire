@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import ResetPassword from './components/ResetPassword';
 import './index.css';
 
 function App() {
@@ -25,14 +26,21 @@ function App() {
     localStorage.removeItem('user');
   };
 
+  const handleUpdateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={!token ? <Login onLogin={handleLogin} /> : <Navigate to="/" />} />
-        <Route path="/*" element={token ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/*" element={token ? <Dashboard user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default App;
+

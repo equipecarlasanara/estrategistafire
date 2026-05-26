@@ -20,16 +20,39 @@ const views = {
   editor: ImageEditor,
 };
 
-export default function Dashboard({ user, onLogout }) {
+export default function Dashboard({ user, onLogout, onUpdateUser }) {
   const [active, setActive] = useState('estrategista');
-  const View = views[active] || GoalsDashboard;
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#080808', overflow: 'hidden' }}>
-      <Sidebar active={active} setActive={setActive} user={user} onLogout={onLogout} />
-      <main style={{ flex: 1, overflow: 'hidden' }}>
-        <View />
+      <Sidebar active={active} setActive={setActive} user={user} onLogout={onLogout} onUpdateUser={onUpdateUser} />
+      <main style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+        <div style={{ display: active === 'estrategista' ? 'block' : 'none', height: '100%' }}>
+          <EstrategistaDigital user={user} onUpdateUser={onUpdateUser} />
+        </div>
+        <div style={{ display: active === 'dashboard' ? 'block' : 'none', height: '100%' }}>
+          <GoalsDashboard user={user} setActive={setActive} />
+        </div>
+        <div style={{ display: active === 'prompts' ? 'block' : 'none', height: '100%' }}>
+          <PromptLibrary />
+        </div>
+        <div style={{ display: active === 'analise' ? 'block' : 'none', height: '100%' }}>
+          <ProfileAnalysis />
+        </div>
+        <div style={{ display: active === 'biblioteca' ? 'block' : 'none', height: '100%' }}>
+          <ContentLibrary />
+        </div>
+        <div style={{ display: active === 'objecao' ? 'block' : 'none', height: '100%' }}>
+          <ObjectionExterminator activeTab={active} />
+        </div>
+        <div style={{ display: active === 'funil' ? 'block' : 'none', height: '100%' }}>
+          <SalesFunnel user={user} />
+        </div>
+        <div style={{ display: active === 'editor' ? 'block' : 'none', height: '100%' }}>
+          <ImageEditor user={user} onUpdateUser={onUpdateUser} />
+        </div>
       </main>
     </div>
   );
 }
+

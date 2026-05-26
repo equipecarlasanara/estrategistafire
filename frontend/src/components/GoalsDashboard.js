@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { Plus, CheckCircle, Circle, Trash2, TrendingUp, Target, Users, Edit2 } from 'lucide-react';
+import { Plus, CheckCircle, Circle, Trash2, TrendingUp, Target, Users, Edit2, X, ExternalLink, Zap } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const auth = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
@@ -18,7 +18,7 @@ function weekStart() {
   return d.toISOString().split('T')[0];
 }
 
-export default function GoalsDashboard() {
+export default function GoalsDashboard({ user, setActive }) {
   const [goal, setGoal] = useState(null);
   const [actions, setActions] = useState([]);
   const [leads, setLeads] = useState([]);
@@ -29,6 +29,34 @@ export default function GoalsDashboard() {
   const [goalForm, setGoalForm] = useState({ monthly_target: '', current_revenue: '' });
   const [newLead, setNewLead] = useState({ name: '', phone: '', stage: 'novo' });
   const [showLeadForm, setShowLeadForm] = useState(false);
+  
+  // Novos estados para alertas de atraso e histórico de objeções CRM
+  const [showPendingPopup, setShowPendingPopup] = useState(false);
+  const [selectedLeadForObjections, setSelectedLeadForObjections] = useState(null);
+  const [leadObjections, setLeadObjections] = useState([]);
+  const [loadingObjections, setLoadingObjections] = useState(false);
+
+  const openLeadObjections = async (lead) => {
+    setSelectedLeadForObjections(lead);
+    setLoadingObjections(true);
+    try {
+      const { data } = await axios.get(`${API}/objections/lead/${lead.id}`, auth());
+      if (Array.isArray(data)) setLeadObjections(data);
+    } catch {
+      setLeadObjections([]);
+    } finally {
+      setLoadingObjections(false);
+    }
+  };
+
+  const handleExterminateNewObjection = () => {
+    if (selectedLeadForObjections) {
+      localStorage.setItem('selectedLeadForObjection', JSON.stringify(selectedLeadForObjections));
+      setActive('objecao');
+      setSelectedLeadForObjections(null);
+    }
+  };
+
 
   const ws = useMemo(() => weekStart(), []);
   const month = MONTHS[new Date().getMonth()];
@@ -100,6 +128,7 @@ export default function GoalsDashboard() {
 
   const pct = goal ? Math.min(100, Math.round((goal.current_revenue / goal.monthly_target) * 100)) : 0;
   const done = (Array.isArray(actions) ? actions : []).filter(a => a.completed).length;
+  const pendingActions = useMemo(() => (Array.isArray(actions) ? actions : []).filter(a => !a.completed), [actions]);
 
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999' }}>Carregando...</div>;
 
@@ -107,10 +136,19 @@ export default function GoalsDashboard() {
     <div style={{ height: '100%', overflowY: 'auto', padding: '28px', background: '#080808' }}>
 
       {/* Header */}
-      <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: '600', color: '#E0E0E0', letterSpacing: '-0.02em' }}>Dashboard</h1>
-        <p style={{ color: '#999', fontSize: '13px', marginTop: '4px' }}>{month} {year}</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+        <div>
+          <h1 style={{ fontSize: '22px', fontWeight: '600', color: '#E0E0E0', letterSpacing: '-0.02em', margin: 0 }}>Dashboard</h1>
+          <p style={{ color: '#999', fontSize: '13px', marginTop: '4px', margin: 0 }}>{month} {year}</p>
+        </div>
+        {pendingActions.length > 0 && (
+          <div onClick={() => setShowPendingPopup(true)} className="blink-alert-container">
+            <span className="blink-alert-dot" />
+            <span>{pendingActions.length} {pendingActions.length === 1 ? 'Tarefa em Atraso' : 'Tarefas em Atraso'}</span>
+          </div>
+        )}
       </div>
+
 
       {/* Cards de métricas */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '28px' }}>
@@ -209,7 +247,12 @@ export default function GoalsDashboard() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {stageleads.map(l => (
                       <div key={l.id} style={{ background: '#111', border: '1px solid #1A1A1A', borderRadius: '8px', padding: '10px 12px' }}>
-                        <p style={{ fontSize: '12px', fontWeight: '500', color: '#CCC', marginBottom: '4px' }}>{l.name}</p>
+                        <p onClick={() => openLeadObjections(l)}
+                          style={{ fontSize: '12px', fontWeight: '600', color: '#E0E0E0', marginBottom: '4px', cursor: 'pointer', display: 'inline-block', textDecoration: 'underline' }}
+                          onMouseEnter={e => e.currentTarget.style.color = '#FF7675'}
+                          onMouseLeave={e => e.currentTarget.style.color = '#E0E0E0'}>
+                          {l.name}
+                        </p>
                         <p style={{ fontSize: '11px', color: '#999' }}>{l.phone}</p>
                         <div style={{ display: 'flex', gap: '4px', marginTop: '8px', flexWrap: 'wrap' }}>
                           {STAGES.filter(s => s.id !== id).map(s => (
@@ -248,6 +291,130 @@ export default function GoalsDashboard() {
           </div>
         </div>
       )}
+
+      {/* Popup de Tarefas Pendentes */}
+      {showPendingPopup && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+          <div style={{ background: '#111', border: '1px solid #2A0808', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', position: 'relative', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+            <button onClick={() => setShowPendingPopup(false)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>
+              <X size={18} />
+            </button>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#FF7675', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Zap size={18} /> Tarefas Pendentes da Semana
+            </h3>
+            <p style={{ color: '#999', fontSize: '12px', marginBottom: '20px' }}>Estas são as tarefas que ainda não foram concluídas no seu plano semanal.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {pendingActions.map(a => (
+                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#181818', border: '1px solid #222', borderRadius: '10px', padding: '14px 16px' }}>
+                  <button onClick={() => toggleAction(a.id, a.completed)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#333', padding: 0, display: 'flex' }}>
+                    <Circle size={18} />
+                  </button>
+                  <span style={{ flex: 1, fontSize: '13px', color: '#CCC' }}>{a.title}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => setShowPendingPopup(false)} className="fire-btn" style={{ width: '100%', marginTop: '24px', padding: '12px' }}>
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Histórico de Objeções do CRM */}
+      {selectedLeadForObjections && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+          <div style={{ background: '#111', border: '1px solid #2A0808', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', position: 'relative', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+            <button onClick={() => setSelectedLeadForObjections(null)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>
+              <X size={18} />
+            </button>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#E0E0E0', marginBottom: '4px' }}>
+              Histórico de Objeções
+            </h3>
+            <p style={{ color: '#FF7675', fontSize: '14px', fontWeight: '600', marginBottom: '2px' }}>{selectedLeadForObjections.name}</p>
+            <p style={{ color: '#777', fontSize: '12px', marginBottom: '20px' }}>{selectedLeadForObjections.phone}</p>
+            
+            <button onClick={handleExterminateNewObjection} className="fire-btn" style={{ width: '100%', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
+              <Zap size={15} /> Exterminar Nova Objeção para este Lead
+            </button>
+
+            <h4 style={{ color: '#E0E0E0', fontSize: '13px', fontWeight: '600', marginBottom: '12px', borderBottom: '1px solid #222', paddingBottom: '6px' }}>
+              Objeções Processadas
+            </h4>
+
+            {loadingObjections ? (
+              <div style={{ color: '#999', fontSize: '13px', textAlign: 'center', padding: '20px' }}>Carregando histórico...</div>
+            ) : leadObjections.length === 0 ? (
+              <div style={{ color: '#666', fontSize: '13px', textAlign: 'center', padding: '20px' }}>
+                Nenhuma objeção registrada para este lead ainda.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '40vh', overflowY: 'auto', paddingRight: '4px' }}>
+                {leadObjections.map((obj) => (
+                  <div key={obj.id} style={{ background: '#181818', border: '1px solid #222', borderRadius: '10px', padding: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#666', marginBottom: '10px' }}>
+                      <span>ID: {obj.id.slice(0, 8)}...</span>
+                      <span>{obj.created_at ? new Date(obj.created_at).toLocaleDateString('pt-BR') : ''}</span>
+                    </div>
+
+                    {obj.image_url && (
+                      <div style={{ marginBottom: '12px', textAlign: 'center' }}>
+                        <img src={obj.image_url} alt="Print da Objeção" style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '6px', objectFit: 'contain', border: '1px solid #333' }} />
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: '#C0392B', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>🎯 Gargalo</span>
+                        <p style={{ fontSize: '12px', color: '#CCC', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{obj.gargalo}</p>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: '#3ECF8E', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>💬 Script de Conversão</span>
+                        <p style={{ fontSize: '12px', color: '#CCC', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{obj.script}</p>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: '#9B6FE0', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>🚀 Missão</span>
+                        <p style={{ fontSize: '12px', color: '#CCC', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{obj.missao}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <button onClick={() => setSelectedLeadForObjections(null)} style={{ width: '100%', background: '#222', color: '#CCC', border: 'none', borderRadius: '10px', padding: '12px', marginTop: '16px', cursor: 'pointer', fontWeight: '500', fontSize: '13px' }}>
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        .blink-alert-container {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(192,57,43,0.06);
+          border: 1px solid rgba(192,57,43,0.3);
+          border-radius: 8px;
+          padding: 8px 16px;
+          color: #FF7675;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          animation: blink-glowing 1.8s infinite;
+        }
+        .blink-alert-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background-color: #C0392B;
+          box-shadow: 0 0 8px #C0392B;
+        }
+        @keyframes blink-glowing {
+          0%, 100% { opacity: 0.85; }
+          50% { opacity: 1; box-shadow: 0 0 8px rgba(192,57,43,0.5); }
+        }
+      `}</style>
     </div>
   );
 }
