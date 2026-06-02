@@ -1446,28 +1446,37 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
     const admin = await isAdmin(userId, env);
     if (!admin) return error("Acesso não autorizado", 403);
 
-    const allUsers = await dbQuery(env, "SELECT id, email, name, created_at, is_admin FROM users ORDER BY created_at DESC");
+    const period = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+    const allUsers = await dbQuery(env, `
+      SELECT 
+        u.id, 
+        u.email, 
+        u.name, 
+        u.created_at, 
+        u.is_admin,
+        (SELECT COUNT(*) FROM goals g WHERE g.user_id = u.id) as goals_cnt,
+        (SELECT COUNT(*) FROM weekly_actions a WHERE a.user_id = u.id) as actions_cnt,
+        (SELECT COUNT(*) FROM leads l WHERE l.user_id = u.id) as leads_cnt,
+        (SELECT COUNT(*) FROM content_items c WHERE c.user_id = u.id) as contents_cnt,
+        (SELECT COALESCE(SUM(count), 0) FROM usage_tracking ut WHERE ut.user_id = u.id AND ut.feature = 'photo_editor' AND ut.period = ?) as photos_cnt
+      FROM users u
+      ORDER BY u.created_at DESC
+    `, [period]);
 
-    const usersWithStats = [];
-    for (const u of allUsers) {
-      const [goals] = await dbQuery(env, "SELECT COUNT(*) as cnt FROM goals WHERE user_id = ?", [u.id]);
-      const [actions] = await dbQuery(env, "SELECT COUNT(*) as cnt FROM weekly_actions WHERE user_id = ?", [u.id]);
-      const [leads] = await dbQuery(env, "SELECT COUNT(*) as cnt FROM leads WHERE user_id = ?", [u.id]);
-      const [contents] = await dbQuery(env, "SELECT COUNT(*) as cnt FROM content_items WHERE user_id = ?", [u.id]);
-      const photoshootCount = await getUsageCount(u.id, "photo_editor", env);
-
-      usersWithStats.push({
-        ...u,
-        is_admin: u.is_admin === 1 || u.is_admin === true,
-        stats: {
-          goals: goals ? goals.cnt : 0,
-          actions: actions ? actions.cnt : 0,
-          leads: leads ? leads.cnt : 0,
-          contents: contents ? contents.cnt : 0,
-          photos: photoshootCount
-        }
-      });
-    }
+    const usersWithStats = allUsers.map(u => ({
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      created_at: u.created_at,
+      is_admin: u.is_admin === 1 || u.is_admin === true,
+      stats: {
+        goals: u.goals_cnt || 0,
+        actions: u.actions_cnt || 0,
+        leads: u.leads_cnt || 0,
+        contents: u.contents_cnt || 0,
+        photos: u.photos_cnt || 0
+      }
+    }));
 
     return json(usersWithStats);
   }
