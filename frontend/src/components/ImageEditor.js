@@ -31,7 +31,7 @@ export default function ImageEditor({ user, onUpdateUser }) {
 
   const fetchUsage = async () => {
     try {
-      const { data } = await axios.get(`${API}/api/usage/photo-editor`, auth());
+      const { data } = await axios.get(`${API}/usage/photo-editor`, auth());
       setUsageCount(data.count);
       setUsageLimit(data.limit);
     } catch {}

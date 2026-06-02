@@ -22,7 +22,7 @@ export default function AdminPanel({ user }) {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${API}/api/admin/users`, auth());
+      const { data } = await axios.get(`${API}/admin/users`, auth());
       setUsers(data);
     } catch (err) {
       console.error('Erro ao buscar usuarias:', err);
@@ -44,7 +44,7 @@ export default function AdminPanel({ user }) {
     setCreating(true);
     setMessage(null);
     try {
-      await axios.post(`${API}/api/admin/users`, {
+      await axios.post(`${API}/admin/users`, {
         name,
         email,
         password,
@@ -77,7 +77,7 @@ export default function AdminPanel({ user }) {
     if (!confirm) return;
 
     try {
-      await axios.delete(`${API}/api/admin/users/${targetUser.id}`, auth());
+      await axios.delete(`${API}/admin/users/${targetUser.id}`, auth());
       alert('Usuária removida com sucesso!');
       fetchUsers(); // Refresh list
     } catch (err) {
