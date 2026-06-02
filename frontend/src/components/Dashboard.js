@@ -8,6 +8,7 @@ import ObjectionExterminator from './ObjectionExterminator';
 import SalesFunnel from './SalesFunnel';
 import ImageEditor from './ImageEditor';
 import PromptLibrary from './PromptLibrary';
+import AdminPanel from './AdminPanel';
 
 const views = {
   estrategista: EstrategistaDigital,
@@ -18,6 +19,7 @@ const views = {
   objecao: ObjectionExterminator,
   funil: SalesFunnel,
   editor: ImageEditor,
+  admin: AdminPanel,
 };
 
 export default function Dashboard({ user, onLogout, onUpdateUser }) {
@@ -50,6 +52,9 @@ export default function Dashboard({ user, onLogout, onUpdateUser }) {
         </div>
         <div style={{ display: active === 'editor' ? 'block' : 'none', height: '100%' }}>
           <ImageEditor user={user} onUpdateUser={onUpdateUser} />
+        </div>
+        <div style={{ display: active === 'admin' ? 'block' : 'none', height: '100%' }}>
+          <AdminPanel user={user} />
         </div>
       </main>
     </div>

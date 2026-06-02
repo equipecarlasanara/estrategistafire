@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import axios from 'axios';
-import { Brain, Target, FileText, User, BookOpen, Shield, TrendingUp, Edit3, LogOut, Camera } from 'lucide-react';
+import { Brain, Target, FileText, User, BookOpen, Shield, TrendingUp, Edit3, LogOut, Camera, Crown } from 'lucide-react';
 import { getApiUrl } from '../lib/api';
 
 const API = getApiUrl();
@@ -19,6 +19,14 @@ const nav = [
 
 export default function Sidebar({ active, setActive, user, onLogout, onUpdateUser }) {
   const fileInputRef = useRef(null);
+
+  const adminEmails = ["carlasanara1@gmail.com", "andressamallinsk@gmail.com"];
+  const isUserAdmin = user && (user.is_admin === 1 || user.is_admin === true || adminEmails.includes(user.email.toLowerCase()));
+
+  const menuItems = [...nav];
+  if (isUserAdmin && !menuItems.some(item => item.id === 'admin')) {
+    menuItems.push({ id: 'admin', label: 'Painel Admin', icon: Crown });
+  }
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -67,7 +75,7 @@ export default function Sidebar({ active, setActive, user, onLogout, onUpdateUse
 
       {/* Nav */}
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-        {nav.map(({ id, label, icon: Icon }) => {
+        {menuItems.map(({ id, label, icon: Icon }) => {
           const isActive = active === id;
           return (
             <button key={id} onClick={() => setActive(id)}

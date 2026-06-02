@@ -113,7 +113,7 @@ class D1Client:
         await self._query(sql, list(query.values()))
 
     # Adaptadores para o código atual do server.py
-    def __getattr__(self, name: str) -> TableProxy:
+    def __getattr__(self, name: str) -> "TableProxy":
         return TableProxy(self, name)
 
     @property

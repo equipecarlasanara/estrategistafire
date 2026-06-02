@@ -23,7 +23,7 @@ class LlmChat:
         self.api_key = api_key
         self.session_id = session_id
         self.system_message = system_message
-        self.model_name = "gemini-2.0-flash" # Default fallback mais moderno
+        self.model_name = "gemini-2.5-flash" # Default fallback mais moderno
         self._configure()
         self.history = history or []
         if system_message:

@@ -18,6 +18,9 @@ export default function ImageEditor({ user, onUpdateUser }) {
   const [driveInput, setDriveInput] = useState(user?.google_drive_link || '');
   const [driveSaving, setDriveSaving] = useState(false);
   const [driveBackupStatus, setDriveBackupStatus] = useState('');
+  
+  const [usageCount, setUsageCount] = useState(0);
+  const [usageLimit, setUsageLimit] = useState(15);
 
   const fetchHistory = async () => {
     try {
@@ -26,8 +29,17 @@ export default function ImageEditor({ user, onUpdateUser }) {
     } catch {}
   };
 
+  const fetchUsage = async () => {
+    try {
+      const { data } = await axios.get(`${API}/api/usage/photo-editor`, auth());
+      setUsageCount(data.count);
+      setUsageLimit(data.limit);
+    } catch {}
+  };
+
   useEffect(() => {
     fetchHistory();
+    fetchUsage();
   }, []);
 
   const handleFile = (e) => {
@@ -48,6 +60,7 @@ export default function ImageEditor({ user, onUpdateUser }) {
       // Salvar no histórico
       await axios.post(`${API}/image-history`, { image_url: data.imageUrl, prompt }, auth());
       fetchHistory();
+      fetchUsage();
 
       // Sincronizar com Drive se configurado
       if (user?.google_drive_link) {
@@ -103,6 +116,15 @@ export default function ImageEditor({ user, onUpdateUser }) {
           <p style={{ color: '#999', fontSize: '13px', margin: 0 }}>Envie uma imagem e use comandos de texto para editá-la com IA.</p>
         </div>
 
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', marginRight: '20px' }}>
+          <div style={{ fontSize: '12px', color: '#AAA', fontWeight: '500' }}>
+            Uso do Editor: <span style={{ color: usageCount >= usageLimit ? '#C0392B' : '#3ECF8E', fontWeight: '600' }}>{usageCount} / {usageLimit} fotos</span>
+          </div>
+          <div style={{ width: '120px', height: '4px', background: '#222', borderRadius: '2px', overflow: 'hidden' }}>
+            <div style={{ width: `${Math.min((usageCount / usageLimit) * 100, 100)}%`, height: '100%', background: usageCount >= usageLimit ? '#C0392B' : 'linear-gradient(90deg, #C0392B, #E74C3C)', transition: 'width 0.3s' }} />
+          </div>
+        </div>
+
         {user?.google_drive_link ? (
           <div onClick={() => setShowDriveModal(true)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(62,207,142,0.06)', border: '1px solid rgba(62,207,142,0.2)', borderRadius: '8px', padding: '6px 12px', color: '#3ECF8E', fontSize: '11px', transition: 'all 0.2s' }}>
             <Cloud size={13} style={{ animation: driveBackupStatus === 'backup' ? 'pulse 1s infinite' : 'none' }} />
@@ -138,10 +160,13 @@ export default function ImageEditor({ user, onUpdateUser }) {
               rows={3} className="fire-input" style={{ resize: 'none', fontFamily: 'inherit', fontSize: '13px' }} />
           </div>
 
-          <button onClick={edit} disabled={loading || !image || !prompt.trim()} className="fire-btn"
-            style={{ width: '100%', marginTop: '16px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <button onClick={edit} disabled={loading || !image || !prompt.trim() || usageCount >= usageLimit} className="fire-btn"
+            style={{ 
+              width: '100%', marginTop: '16px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              opacity: usageCount >= usageLimit ? 0.5 : 1, cursor: usageCount >= usageLimit ? 'not-allowed' : 'pointer'
+            }}>
             <Edit3 size={14} />
-            {loading ? 'Editando...' : 'Aplicar Edição'}
+            {loading ? 'Editando...' : usageCount >= usageLimit ? 'Limite mensal atingido' : 'Aplicar Edição'}
           </button>
         </div>
 

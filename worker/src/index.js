@@ -267,6 +267,38 @@ async function dbRun(env, sql, params = []) {
   return params.length ? await stmt.bind(...params).run() : await stmt.run();
 }
 
+async function isAdmin(userId, env) {
+  if (!userId) return false;
+  const [user] = await dbQuery(env, "SELECT email, is_admin FROM users WHERE id = ?", [userId]);
+  if (!user) return false;
+  const adminEmails = ["carlasanara1@gmail.com", "andressamallinsk@gmail.com"];
+  if (adminEmails.includes(user.email.toLowerCase())) return true;
+  return user.is_admin === 1 || user.is_admin === true;
+}
+
+async function checkUsageLimit(userId, feature, limit, env) {
+  const period = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  const [usage] = await dbQuery(env, "SELECT count FROM usage_tracking WHERE user_id = ? AND feature = ? AND period = ?", [userId, feature, period]);
+  const count = usage ? usage.count : 0;
+  return count < limit;
+}
+
+async function incrementUsageCount(userId, feature, incrementBy, env) {
+  const period = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  const [usage] = await dbQuery(env, "SELECT count FROM usage_tracking WHERE user_id = ? AND feature = ? AND period = ?", [userId, feature, period]);
+  if (usage) {
+    await dbRun(env, "UPDATE usage_tracking SET count = count + ? WHERE user_id = ? AND feature = ? AND period = ?", [incrementBy, userId, feature, period]);
+  } else {
+    await dbRun(env, "INSERT INTO usage_tracking (user_id, feature, period, count) VALUES (?, ?, ?, ?)", [userId, feature, period, incrementBy]);
+  }
+}
+
+async function getUsageCount(userId, feature, env) {
+  const period = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  const [usage] = await dbQuery(env, "SELECT count FROM usage_tracking WHERE user_id = ? AND feature = ? AND period = ?", [userId, feature, period]);
+  return usage ? usage.count : 0;
+}
+
 // ---------- MESES EM PT ----------
 
 const MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
@@ -340,7 +372,7 @@ async function handleRequest(request, env) {
     const userId = await authenticate(request, env);
     if (!userId) return error("Token inválido", 401);
 
-    const [user] = await dbQuery(env, "SELECT id, email, name, created_at FROM users WHERE id = ?", [userId]);
+    const [user] = await dbQuery(env, "SELECT id, email, name, created_at, avatar_url, google_drive_link, is_admin FROM users WHERE id = ?", [userId]);
     if (!user) return error("Usuário não encontrado", 404);
     return json(user);
   }
@@ -579,7 +611,7 @@ async function handleRequest(request, env) {
           }]
         };
         const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.GEMINI_API_KEY}`,
           { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(geminiBody) }
         );
         const geminiData = await geminiRes.json();
@@ -640,7 +672,7 @@ FORMATO OBRIGATÓRIO (Markdown):
 💰 ETAPA 3: CONVERSÃO E FECHAMENTO
 📊 VIABILIDADE E NÚMEROS`;
 
-      const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", funnelSystem, [], body.message);
+      const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.5-flash", funnelSystem, [], body.message);
       return json({ response: text, session_id: sessionId });
     } catch (e) {
       return error(`Erro: ${e.message}`, 500);
@@ -663,7 +695,7 @@ Responda APENAS com JSON puro (sem markdown, sem explicações):
 {"reels":[{"title":"...","description":"..."}],"carrossel":[...],"postEstatico":[...],"stories":[...],"ads":[...]}
 Cada chave deve ter pelo menos 10 objetos. Siga a metodologia Andressa Mallinsk.`;
 
-      const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", "Você é uma estrategista de conteúdo da Andressa Mallinsk. Use o plano de ação da mentorada para personalizar os temas.", [], prompt);
+      const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.5-flash", "Você é uma estrategista de conteúdo da Andressa Mallinsk. Use o plano de ação da mentorada para personalizar os temas.", [], prompt);
       const match = text.match(/\{[\s\S]*\}/);
       if (!match) throw new Error("Formato inválido");
       return json(JSON.parse(match[0]));
@@ -688,7 +720,7 @@ Cada chave deve ter pelo menos 10 objetos. Siga a metodologia Andressa Mallinsk.
 Formato: ${formatMap[body.content_type] || "conteúdo estratégico"}.
 Finalize com CTA direto para DM. Voz firme e direta da Estrategista.`;
 
-      const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", "Você é uma estrategista de conteúdo.", [], prompt);
+      const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.5-flash", "Você é uma estrategista de conteúdo.", [], prompt);
       return json({ content: text });
     } catch (e) {
       return error(`Erro: ${e.message}`, 500);
@@ -750,12 +782,12 @@ Finalize com CTA direto para DM. Voz firme e direta da Estrategista.`;
 
       let response;
       try {
-        const result = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", systemPrompt, history.slice(-10), body.message);
+        const result = await callGemini(env.GEMINI_API_KEY, "gemini-2.5-flash", systemPrompt, history.slice(-10), body.message);
         response = result.text;
       } catch (geminiError) {
         // Tenta sem histórico em caso de erro
         try {
-          const result = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", ESTRATEGISTA_SYSTEM, [], body.message);
+          const result = await callGemini(env.GEMINI_API_KEY, "gemini-2.5-flash", ESTRATEGISTA_SYSTEM, [], body.message);
           response = result.text;
         } catch (e2) {
           return error("A Estrategista está indisponível no momento. Tente novamente em alguns segundos.", 503);
@@ -815,7 +847,7 @@ Crie mensagem exata, palavra por palavra, pronta para copiar.
 **Missão:**
 O que fazer após enviar o script.`;
 
-      const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", ESTRATEGISTA_SYSTEM, [], prompt, body.image);
+      const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.5-flash", ESTRATEGISTA_SYSTEM, [], prompt, body.image);
 
       const lines = text.split("\n");
       const gargalo = [], script = [], missao = [];
@@ -866,7 +898,7 @@ O que fazer após enviar o script.`;
 Responda APENAS com o JSON puro, sem markdown, sem explicações.`;
 
         const { text: extractText } = await callGemini(
-          env.GEMINI_API_KEY, "gemini-2.0-flash",
+          env.GEMINI_API_KEY, "gemini-2.5-flash",
           "Você é um extrator de metadados e analista de imagem preciso.",
           [], extractPrompt, image
         );
@@ -925,7 +957,7 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
 7. Escreva de forma assertiva, firme, empoderando a mentorada ("Leoa") mas confrontando os gargalos comerciais de frente.`;
 
       const { text: analysisText } = await callGemini(
-        env.GEMINI_API_KEY, "gemini-2.0-flash",
+        env.GEMINI_API_KEY, "gemini-2.5-flash",
         analysisSystemInstruction,
         [], analysisPrompt, image
       );
@@ -1006,13 +1038,23 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
       const { prompt, baseImage, numImages = 4 } = body;
       const count = Math.min(numImages, 6);
 
+      // Check photo limit (limit: 15 per month)
+      const allowed = await checkUsageLimit(userId, "photo_editor", 15, env);
+      if (!allowed) {
+        return error("Você atingiu o limite mensal de 15 fotos geradas.", 429);
+      }
+      const currentCount = await getUsageCount(userId, "photo_editor", env);
+      if (currentCount + count > 15) {
+        return error(`Você só tem saldo para gerar mais ${15 - currentCount} foto(s) este mês.`, 429);
+      }
+
       const base64Img = baseImage?.base64 || baseImage;
       let personDescription = "";
 
       let englishPrompt = prompt;
       try {
         const translatePrompt = `Translate this image scenario prompt to English, making it natural and descriptive for an AI image generator: "${prompt}". Respond only with the English translation.`;
-        const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", "", [], translatePrompt);
+        const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.5-flash", "", [], translatePrompt);
         englishPrompt = text;
       } catch (e) {
         console.log("Translation failed:", e.message);
@@ -1083,7 +1125,7 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
               if (!personDescription && base64Img) {
                 try {
                   const descPrompt = `Analyze the person's face in this image and provide a highly detailed physical description in English for an AI image generator (like Imagen) to recreate this exact person's face and likeness as closely as possible. Detailed: face shape, jawline, hair texture/style/color, eyes shape/color, nose, lips, skin tone, gender, age. Write ONLY the description in English.`;
-                  const resDesc = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", "", [], descPrompt, base64Img);
+                  const resDesc = await callGemini(env.GEMINI_API_KEY, "gemini-2.5-flash", "", [], descPrompt, base64Img);
                   personDescription = resDesc.text;
                 } catch (descErr) {
                   console.log("Lazy description extraction failed:", descErr.message);
@@ -1116,6 +1158,10 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
         .map(r => r.value);
 
       if (generated.length === 0) return error("Não foi possível gerar imagens. Tente um prompt mais específico.", 500);
+
+      // Increment count by the number of successfully generated images
+      await incrementUsageCount(userId, "photo_editor", generated.length, env);
+
       return json({ images: generated, total: generated.length });
     } catch (e) {
       return error(`Erro: ${e.message}`, 500);
@@ -1125,6 +1171,13 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
   if (path === "/ai/edit-image" && method === "POST") {
     const userId = await authenticate(request, env);
     if (!userId) return error("Token inválido", 401);
+
+    // Check photo limit (limit: 15 per month)
+    const allowed = await checkUsageLimit(userId, "photo_editor", 15, env);
+    if (!allowed) {
+      return error("Você atingiu o limite mensal de 15 fotos geradas/editadas.", 429);
+    }
+
     try {
       const body = await request.json();
       const { prompt, image } = body;
@@ -1134,7 +1187,7 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
       let englishPrompt = prompt;
       try {
         const translatePrompt = `Translate this image editing request/prompt to English, making it natural and descriptive for an AI image generator: "${prompt}". Respond only with the English translation.`;
-        const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", "", [], translatePrompt);
+        const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.5-flash", "", [], translatePrompt);
         englishPrompt = text;
       } catch (e) {
         console.log("Translation failed:", e.message);
@@ -1193,7 +1246,7 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
           let editPrompt = prompt;
           try {
             const descPrompt = `Analyze the provided image and write a detailed scene description in English that incorporates the following changes requested by the user: "${prompt}". The final description should be optimized for a text-to-image AI generator to produce the updated scene. Write ONLY the final description in English.`;
-            const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.0-flash", "", [], descPrompt, base64Img);
+            const { text } = await callGemini(env.GEMINI_API_KEY, "gemini-2.5-flash", "", [], descPrompt, base64Img);
             editPrompt = text;
           } catch (e) {
             console.log("Erro ao descrever edição:", e.message);
@@ -1212,6 +1265,8 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
       }
 
       if (images.length > 0) {
+        // Increment count by 1 for successfully editing the image
+        await incrementUsageCount(userId, "photo_editor", 1, env);
         return json({ imageUrl: `data:${images[0].mimeType};base64,${images[0].data}` });
       }
       return error("Não foi possível editar a imagem. Tente novamente.", 500);
@@ -1372,6 +1427,106 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
     const hashed = await hashPassword(new_password);
     await dbRun(env, "UPDATE users SET password = ? WHERE id = ?", [hashed, payload.user_id]);
     return json({ success: true, message: "Senha redefinida com sucesso!" });
+  }
+
+  // ---- GET PHOTO USAGE ----
+  if (path === "/api/usage/photo-editor" && method === "GET") {
+    const userId = await authenticate(request, env);
+    if (!userId) return error("Token inválido", 401);
+    const count = await getUsageCount(userId, "photo_editor", env);
+    return json({ count, limit: 15 });
+  }
+
+  // ---- ADMIN ROUTES ----
+
+  if (path === "/api/admin/users" && method === "GET") {
+    const userId = await authenticate(request, env);
+    if (!userId) return error("Token inválido", 401);
+
+    const admin = await isAdmin(userId, env);
+    if (!admin) return error("Acesso não autorizado", 403);
+
+    const allUsers = await dbQuery(env, "SELECT id, email, name, created_at, is_admin FROM users ORDER BY created_at DESC");
+
+    const usersWithStats = [];
+    for (const u of allUsers) {
+      const [goals] = await dbQuery(env, "SELECT COUNT(*) as cnt FROM goals WHERE user_id = ?", [u.id]);
+      const [actions] = await dbQuery(env, "SELECT COUNT(*) as cnt FROM weekly_actions WHERE user_id = ?", [u.id]);
+      const [leads] = await dbQuery(env, "SELECT COUNT(*) as cnt FROM leads WHERE user_id = ?", [u.id]);
+      const [contents] = await dbQuery(env, "SELECT COUNT(*) as cnt FROM content_items WHERE user_id = ?", [u.id]);
+      const photoshootCount = await getUsageCount(u.id, "photo_editor", env);
+
+      usersWithStats.push({
+        ...u,
+        is_admin: u.is_admin === 1 || u.is_admin === true,
+        stats: {
+          goals: goals ? goals.cnt : 0,
+          actions: actions ? actions.cnt : 0,
+          leads: leads ? leads.cnt : 0,
+          contents: contents ? contents.cnt : 0,
+          photos: photoshootCount
+        }
+      });
+    }
+
+    return json(usersWithStats);
+  }
+
+  if (path === "/api/admin/users" && method === "POST") {
+    const userId = await authenticate(request, env);
+    if (!userId) return error("Token inválido", 401);
+
+    const admin = await isAdmin(userId, env);
+    if (!admin) return error("Acesso não autorizado", 403);
+
+    const body = await request.json();
+    const { email, name, password, is_admin = false } = body;
+    if (!email || !name || !password) return error("Campos obrigatórios faltando");
+
+    const existing = await dbQuery(env, "SELECT id FROM users WHERE email = ?", [email]);
+    if (existing.length > 0) return error("Email já cadastrado");
+
+    const id = uuid();
+    const hashed = await hashPassword(password);
+    const createdAt = now();
+
+    await dbRun(env,
+      "INSERT INTO users (id, email, name, password, created_at, is_admin) VALUES (?, ?, ?, ?, ?, ?)",
+      [id, email, name, hashed, createdAt, is_admin ? 1 : 0]
+    );
+
+    return json({ success: true, user: { id, email, name, created_at: createdAt, is_admin } });
+  }
+
+  const adminUserMatch = path.match(/^\/api\/admin\/users\/(.+)$/);
+  if (adminUserMatch && method === "DELETE") {
+    const userId = await authenticate(request, env);
+    if (!userId) return error("Token inválido", 401);
+
+    const admin = await isAdmin(userId, env);
+    if (!admin) return error("Acesso não autorizado", 403);
+
+    const targetUserId = adminUserMatch[1];
+
+    const tables = [
+      "goals",
+      "weekly_actions",
+      "leads",
+      "content_items",
+      "chat_history",
+      "action_plans",
+      "image_history",
+      "objection_history",
+      "usage_tracking"
+    ];
+
+    for (const table of tables) {
+      await dbRun(env, `DELETE FROM ${table} WHERE user_id = ?`, [targetUserId]);
+    }
+
+    await dbRun(env, "DELETE FROM users WHERE id = ?", [targetUserId]);
+
+    return json({ success: true, message: "Usuário e todo o histórico deletados com sucesso." });
   }
 
   return error("Rota não encontrada", 404);

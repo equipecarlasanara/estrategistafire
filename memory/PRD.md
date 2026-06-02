@@ -30,8 +30,8 @@ Construir uma aplicação "segundo cérebro da estrategista" - uma plataforma de
 9. **Editor de Imagens** - Editor de imagens com comandos de texto
 
 ### Integrações
-- Gemini (gemini-2.0-flash) - Chat e análise de texto + leitura de PDF
-- Gemini (gemini-2.0-flash-preview-image-generation) - Geração e edição de imagens
+- Gemini (gemini-2.5-flash) - Chat e análise de texto + leitura de PDF
+- Gemini (gemini-2.5-flash-preview-image-generation) - Geração e edição de imagens
 - Cloudflare D1 - Banco de dados (usuários, leads, metas, planos de ação, histórico de chat)
 - Cloudflare Workers - Backend 100% serverless
 
@@ -151,8 +151,8 @@ CREATE TABLE action_plans (id, user_id, filename, content, uploaded_at);
 ```
 
 ## Notas Técnicas
-- Modelo para texto: gemini-2.0-flash
-- Modelo para imagens: gemini-2.0-flash-preview-image-generation
+- Modelo para texto: gemini-2.5-flash
+- Modelo para imagens: gemini-2.5-flash-preview-image-generation
 - PDFs enviados em base64 para o Gemini (suporte nativo)
 - Domínio: ia.andressamallinsk.com.br (Cloudflare Pages)
 - Worker: estrategista-api.andressamallinsk.workers.dev
