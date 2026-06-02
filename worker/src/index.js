@@ -271,7 +271,12 @@ async function isAdmin(userId, env) {
   if (!userId) return false;
   const [user] = await dbQuery(env, "SELECT email, is_admin FROM users WHERE id = ?", [userId]);
   if (!user) return false;
-  const adminEmails = ["carlasanara1@gmail.com", "andressamallinsk@gmail.com", "priscila.institutomallinsk@gmail.com"];
+  const adminEmails = [
+    "carlasanara1@gmail.com", 
+    "andressamallinsk@gmail.com", 
+    "priscila.institutomallinsk@gmail.com",
+    "priscila.insitutomallinsk@gmail.com"
+  ];
   if (adminEmails.includes(user.email.toLowerCase())) return true;
   return user.is_admin === 1 || user.is_admin === true;
 }

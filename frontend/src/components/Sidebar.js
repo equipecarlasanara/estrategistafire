@@ -20,7 +20,12 @@ const nav = [
 export default function Sidebar({ active, setActive, user, onLogout, onUpdateUser }) {
   const fileInputRef = useRef(null);
 
-  const adminEmails = ["carlasanara1@gmail.com", "andressamallinsk@gmail.com", "priscila.institutomallinsk@gmail.com"];
+  const adminEmails = [
+    "carlasanara1@gmail.com", 
+    "andressamallinsk@gmail.com", 
+    "priscila.institutomallinsk@gmail.com",
+    "priscila.insitutomallinsk@gmail.com"
+  ];
   const isUserAdmin = user && (user.is_admin === 1 || user.is_admin === true || adminEmails.includes(user.email.toLowerCase()));
 
   const menuItems = [...nav];
