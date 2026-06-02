@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Upload, Download, Edit3, Cloud, Link2, Trash2 } from 'lucide-react';
+import { Upload, Download, Edit3, Cloud, Link2, Trash2, AlertTriangle } from 'lucide-react';
 import { getApiUrl } from '../lib/api';
 
 const API = getApiUrl();
@@ -138,6 +138,36 @@ export default function ImageEditor({ user, onUpdateUser }) {
         )}
       </div>
 
+      {/* Alerta de Limite Piscante */}
+      {usageCount >= 12 && (
+        <div className="limit-alert-pulse" style={{
+          maxWidth: '900px',
+          background: 'rgba(192,57,43,0.08)',
+          border: '1px solid #C0392B',
+          borderRadius: '10px',
+          padding: '14px 18px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          boxSizing: 'border-box'
+        }}>
+          <AlertTriangle size={18} style={{ color: '#C0392B', flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <span style={{ fontWeight: '700', color: '#fff', fontSize: '13px' }}>
+              {usageCount >= usageLimit 
+                ? '⚠️ LIMITE MENSAL ATINGIDO' 
+                : '🚨 LIMITE DE FOTOS PRÓXIMO'}
+            </span>
+            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#AAA', lineHeight: '1.4' }}>
+              {usageCount >= usageLimit 
+                ? 'Você utilizou todas as suas 15 fotos deste mês. O editor estará disponível novamente no próximo mês.' 
+                : `Você já utilizou ${usageCount} de 15 fotos permitidas mensalmente. Planeje bem suas edições.`}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', maxWidth: '900px', marginBottom: '40px' }}>
         {/* Original */}
         <div style={{ background: '#111', border: '1px solid #1E0505', borderRadius: '12px', padding: '24px' }}>
@@ -250,7 +280,16 @@ export default function ImageEditor({ user, onUpdateUser }) {
         </div>
       )}
 
-      <style>{`@keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:0.8} }`}</style>
+      <style>{`
+        @keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:0.8} }
+        @keyframes warningPulse {
+          0%, 100% { box-shadow: 0 0 4px rgba(192,57,43,0.15); border-color: rgba(192,57,43,0.4); }
+          50% { box-shadow: 0 0 14px rgba(192,57,43,0.5); border-color: rgba(192,57,43,0.9); }
+        }
+        .limit-alert-pulse {
+          animation: warningPulse 2s infinite ease-in-out;
+        }
+      `}</style>
     </div>
   );
 }
