@@ -1430,7 +1430,7 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
   }
 
   // ---- GET PHOTO USAGE ----
-  if (path === "/api/usage/photo-editor" && method === "GET") {
+  if (path === "/usage/photo-editor" && method === "GET") {
     const userId = await authenticate(request, env);
     if (!userId) return error("Token inválido", 401);
     const count = await getUsageCount(userId, "photo_editor", env);
@@ -1439,7 +1439,7 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
 
   // ---- ADMIN ROUTES ----
 
-  if (path === "/api/admin/users" && method === "GET") {
+  if (path === "/admin/users" && method === "GET") {
     const userId = await authenticate(request, env);
     if (!userId) return error("Token inválido", 401);
 
@@ -1472,7 +1472,7 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
     return json(usersWithStats);
   }
 
-  if (path === "/api/admin/users" && method === "POST") {
+  if (path === "/admin/users" && method === "POST") {
     const userId = await authenticate(request, env);
     if (!userId) return error("Token inválido", 401);
 
@@ -1498,7 +1498,7 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
     return json({ success: true, user: { id, email, name, created_at: createdAt, is_admin } });
   }
 
-  const adminUserMatch = path.match(/^\/api\/admin\/users\/(.+)$/);
+  const adminUserMatch = path.match(/^\/admin\/users\/(.+)$/);
   if (adminUserMatch && method === "DELETE") {
     const userId = await authenticate(request, env);
     if (!userId) return error("Token inválido", 401);
