@@ -412,7 +412,7 @@ async function handleRequest(request, env) {
   if (path === "/goals" && method === "GET") {
     const userId = await authenticate(request, env);
     if (!userId) return error("Token inválido", 401);
-    const goals = await dbQuery(env, "SELECT * FROM goals WHERE user_id = ? LIMIT 100", [userId]);
+    const goals = await dbQuery(env, "SELECT * FROM goals WHERE user_id = ? ORDER BY created_at DESC", [userId]);
     return json(goals);
   }
 
@@ -454,9 +454,9 @@ async function handleRequest(request, env) {
     const weekStart = url.searchParams.get("week_start");
     let actions;
     if (weekStart) {
-      actions = await dbQuery(env, "SELECT * FROM weekly_actions WHERE user_id = ? AND week_start = ? LIMIT 100", [userId, weekStart]);
+      actions = await dbQuery(env, "SELECT * FROM weekly_actions WHERE user_id = ? AND week_start = ? ORDER BY created_at ASC", [userId, weekStart]);
     } else {
-      actions = await dbQuery(env, "SELECT * FROM weekly_actions WHERE user_id = ? LIMIT 100", [userId]);
+      actions = await dbQuery(env, "SELECT * FROM weekly_actions WHERE user_id = ? ORDER BY created_at ASC", [userId]);
     }
     return json(actions);
   }
@@ -505,7 +505,7 @@ async function handleRequest(request, env) {
   if (path === "/leads" && method === "GET") {
     const userId = await authenticate(request, env);
     if (!userId) return error("Token inválido", 401);
-    const leads = await dbQuery(env, "SELECT * FROM leads WHERE user_id = ? LIMIT 100", [userId]);
+    const leads = await dbQuery(env, "SELECT * FROM leads WHERE user_id = ? ORDER BY created_at DESC", [userId]);
     return json(leads);
   }
 
@@ -573,7 +573,7 @@ async function handleRequest(request, env) {
   if (path === "/content" && method === "GET") {
     const userId = await authenticate(request, env);
     if (!userId) return error("Token inválido", 401);
-    const items = await dbQuery(env, "SELECT * FROM content_items WHERE user_id = ? LIMIT 100", [userId]);
+    const items = await dbQuery(env, "SELECT * FROM content_items WHERE user_id = ? ORDER BY created_at DESC", [userId]);
     return json(items);
   }
 
