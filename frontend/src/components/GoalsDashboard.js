@@ -77,17 +77,45 @@ export default function GoalsDashboard({ user, setActive }) {
 
   useEffect(() => { load(); }, [load]);
 
+  useEffect(() => {
+    if (goal) {
+      setGoalForm({
+        monthly_target: goal.monthly_target?.toString() || '',
+        current_revenue: goal.current_revenue?.toString() || ''
+      });
+    }
+  }, [goal]);
+
   const saveGoal = async () => {
+    const parseNum = (val, fallback = 0) => {
+      if (val === undefined || val === null || val === '') return fallback;
+      const clean = val.toString().replace(/\./g, '').replace(/,/g, '.').trim();
+      const num = parseFloat(clean);
+      return isNaN(num) ? fallback : num;
+    };
+
+    const targetVal = parseNum(goalForm.monthly_target, goal ? goal.monthly_target : 0);
+    const revenueVal = parseNum(goalForm.current_revenue, goal ? goal.current_revenue : 0);
+
+    if (targetVal <= 0) {
+      alert('Por favor, insira um valor de meta maior que zero.');
+      return;
+    }
+
     try {
       if (goal) {
-        const { data } = await axios.patch(`${API}/goals/${goal.id}`, { monthly_target: +goalForm.monthly_target, current_revenue: +goalForm.current_revenue }, auth());
+        const { data } = await axios.patch(`${API}/goals/${goal.id}`, { monthly_target: targetVal, current_revenue: revenueVal }, auth());
         setGoal(data);
       } else {
-        const { data } = await axios.post(`${API}/goals`, { monthly_target: +goalForm.monthly_target, current_revenue: +goalForm.current_revenue || 0, month, year }, auth());
+        const { data } = await axios.post(`${API}/goals`, { monthly_target: targetVal, current_revenue: revenueVal, month, year }, auth());
         setGoal(data);
       }
       setEditGoal(false);
-    } catch (e) { alert('Erro ao salvar meta.'); }
+      alert('Meta salva com sucesso!');
+    } catch (e) { 
+      console.error(e);
+      alert('Erro ao salvar meta.'); 
+    }
   };
 
   const addAction = async () => {
@@ -282,11 +310,11 @@ export default function GoalsDashboard({ user, setActive }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '11px', color: '#AAA', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px' }}>Meta do Mês (R$)</label>
-              <input type="number" className="fire-input" value={goalForm.monthly_target} onChange={e => setGoalForm(f => ({ ...f, monthly_target: e.target.value }))} placeholder={goal?.monthly_target || '10000'} />
+              <input type="text" className="fire-input" value={goalForm.monthly_target} onChange={e => setGoalForm(f => ({ ...f, monthly_target: e.target.value }))} placeholder={goal?.monthly_target || '10000'} />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '11px', color: '#AAA', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px' }}>Faturamento Atual (R$)</label>
-              <input type="number" className="fire-input" value={goalForm.current_revenue} onChange={e => setGoalForm(f => ({ ...f, current_revenue: e.target.value }))} placeholder={goal?.current_revenue || '0'} />
+              <input type="text" className="fire-input" value={goalForm.current_revenue} onChange={e => setGoalForm(f => ({ ...f, current_revenue: e.target.value }))} placeholder={goal?.current_revenue || '0'} />
             </div>
             <button onClick={saveGoal} className="fire-btn" style={{ width: '100%', padding: '12px' }}>Salvar Meta</button>
           </div>
