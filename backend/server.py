@@ -798,13 +798,29 @@ Exemplo da estrutura JSON de resposta esperada:
         response = await chat.send_message(message)
         
         import json
-        import re
-        json_match = re.search(r'\{.*\}', response, re.DOTALL)
-        if json_match:
-            themes = json.loads(json_match.group())
+        
+        # Limpar possiveis blocos markdown que o Gemini envia
+        cleaned = response.strip()
+        if cleaned.startswith("```json"):
+            cleaned = cleaned[7:]
+        elif cleaned.startswith("```"):
+            cleaned = cleaned[3:]
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3]
+        cleaned = cleaned.strip()
+        
+        try:
+            themes = json.loads(cleaned)
             return themes
-        else:
-            raise ValueError("Formato de resposta inválido")
+        except Exception as json_err:
+            import re
+            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            if json_match:
+                try:
+                    return json.loads(json_match.group())
+                except:
+                    pass
+            raise ValueError(f"Formato de resposta inválido ou JSON quebrado. Resposta original: {response[:100]}...")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao gerar temas: {str(e)}")
 

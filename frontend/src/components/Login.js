@@ -58,6 +58,19 @@ export default function Login({ onLogin }) {
             </div>
           )}
 
+          {mode !== 'forgot' && (
+            <div style={{ display: 'flex', background: '#2A0808', padding: '4px', borderRadius: '8px', marginBottom: '24px' }}>
+              <button onClick={() => { setMode('login'); setError(''); }}
+                style={{ flex: 1, padding: '10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: 'none', cursor: 'pointer', background: mode === 'login' ? '#53050B' : 'transparent', color: mode === 'login' ? '#FFF' : '#CCC' }}>
+                Fazer Login
+              </button>
+              <button onClick={() => { setMode('register'); setError(''); }}
+                style={{ flex: 1, padding: '10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: 'none', cursor: 'pointer', background: mode === 'register' ? '#53050B' : 'transparent', color: mode === 'register' ? '#FFF' : '#CCC' }}>
+                Criar Conta
+              </button>
+            </div>
+          )}
+
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {mode === 'register' && (
               <div>
@@ -92,15 +105,10 @@ export default function Login({ onLogin }) {
           </form>
 
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            {mode === 'forgot' ? (
+            {mode === 'forgot' && (
               <button onClick={() => { setMode('login'); setError(''); setMessage(''); }}
                 style={{ background: 'none', border: 'none', color: '#C0606A', fontSize: '13px', cursor: 'pointer' }}>
                 Voltar para o Login
-              </button>
-            ) : (
-              <button onClick={() => { setMode(m => m === 'login' ? 'register' : 'login'); setError(''); setMessage(''); }}
-                style={{ background: 'none', border: 'none', color: '#C0606A', fontSize: '13px', cursor: 'pointer' }}>
-                {mode === 'login' ? 'Não tem acesso? Registre-se' : 'Já tem acesso? Faça login'}
               </button>
             )}
           </div>
