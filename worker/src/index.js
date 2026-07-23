@@ -29,6 +29,59 @@ function error(message, status = 400) {
   return json({ detail: message }, status);
 }
 
+// ---------- AUTO SCHEMA MIGRATIONS (SQLITE D1) ----------
+
+let dbInitialized = false;
+
+async function ensureSchema(env) {
+  if (dbInitialized) return;
+  try {
+    // 1. Create missing tables
+    await env.DB.exec(`
+      CREATE TABLE IF NOT EXISTS usage_tracking (
+        user_id TEXT NOT NULL,
+        feature TEXT NOT NULL,
+        period TEXT NOT NULL,
+        count INTEGER DEFAULT 0,
+        PRIMARY KEY (user_id, feature, period)
+      );
+      CREATE TABLE IF NOT EXISTS image_history (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        image_url TEXT NOT NULL,
+        prompt TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS objection_history (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        lead_id TEXT,
+        image_url TEXT,
+        gargalo TEXT NOT NULL,
+        script TEXT NOT NULL,
+        missao TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
+    `);
+
+    // 2. Add missing columns to users table safely
+    try {
+      await env.DB.exec("ALTER TABLE users ADD COLUMN avatar_url TEXT;");
+    } catch (_) {}
+    try {
+      await env.DB.exec("ALTER TABLE users ADD COLUMN google_drive_link TEXT;");
+    } catch (_) {}
+    try {
+      await env.DB.exec("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0;");
+    } catch (_) {}
+
+    dbInitialized = true;
+    console.log("D1 Database schema verified and updated successfully ✅");
+  } catch (e) {
+    console.error("Failed to ensure schema:", e);
+  }
+}
+
 // ---------- JWT ----------
 
 async function signJWT(payload, secret) {
@@ -143,7 +196,13 @@ async function callGemini(apiKey, model, systemMessage, history, userText, image
   for (const h of history) {
     contents.push({
       role: h.role === "model" ? "model" : "user",
-      parts: Array.isArray(h.parts) ? h.parts.map(p => ({ text: p })) : [{ text: h.parts }]
+      parts: Array.isArray(h.parts)
+        ? h.parts.map(p => {
+            if (typeof p === "string") return { text: p };
+            if (p && typeof p === "object" && typeof p.text === "string") return { text: p.text };
+            return { text: JSON.stringify(p) };
+          })
+        : [{ text: typeof h.parts === "string" ? h.parts : (h.parts?.text || JSON.stringify(h.parts)) }]
     });
   }
 
@@ -337,8 +396,9 @@ async function handleRequest(request, env) {
 
   if (path === "/auth/register" && method === "POST") {
     const body = await request.json();
-    const { email, name, password } = body;
+    let { email, name, password } = body;
     if (!email || !name || !password) return error("Campos obrigatórios faltando");
+    email = email.trim().toLowerCase();
 
     const existing = await dbQuery(env, "SELECT id FROM users WHERE email = ?", [email]);
     if (existing.length > 0) return error("Email já cadastrado");
@@ -359,7 +419,8 @@ async function handleRequest(request, env) {
 
   if (path === "/auth/login" && method === "POST") {
     const body = await request.json();
-    const { email, password } = body;
+    let { email, password } = body;
+    email = (email || "").trim().toLowerCase();
 
     const [user] = await dbQuery(env, "SELECT * FROM users WHERE email = ?", [email]);
     if (!user) return error("Credenciais inválidas", 401);
@@ -1362,8 +1423,9 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
   // ---- RECOVERY DE CONTA (FORGOT PASSWORD) ----
   if (path === "/auth/forgot-password" && method === "POST") {
     const body = await request.json();
-    const { email } = body;
+    let { email } = body;
     if (!email) return error("E-mail é obrigatório");
+    email = email.trim().toLowerCase();
 
     const [user] = await dbQuery(env, "SELECT id, name FROM users WHERE email = ?", [email]);
     if (!user) {
@@ -1494,8 +1556,9 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
     if (!admin) return error("Acesso não autorizado", 403);
 
     const body = await request.json();
-    const { email, name, password, is_admin = false } = body;
+    let { email, name, password, is_admin = false } = body;
     if (!email || !name || !password) return error("Campos obrigatórios faltando");
+    email = email.trim().toLowerCase();
 
     const existing = await dbQuery(env, "SELECT id FROM users WHERE email = ?", [email]);
     if (existing.length > 0) return error("Email já cadastrado");
@@ -1551,6 +1614,7 @@ DIRETRIZES DE DIAGNÓSTICO (MÉTODO ANDRESSA MALLINSK):
 export default {
   async fetch(request, env, ctx) {
     try {
+      await ensureSchema(env);
       return await handleRequest(request, env);
     } catch (e) {
       console.error("Worker error:", e);

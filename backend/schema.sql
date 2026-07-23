@@ -7,7 +7,10 @@ CREATE TABLE IF NOT EXISTS users (
     name TEXT NOT NULL,
     password TEXT NOT NULL,
     created_at TEXT NOT NULL,
-    google_calendar_token TEXT
+    google_calendar_token TEXT,
+    avatar_url TEXT,
+    google_drive_link TEXT,
+    is_admin INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS goals (
@@ -73,5 +76,38 @@ CREATE TABLE IF NOT EXISTS action_plans (
     filename TEXT NOT NULL,
     content TEXT NOT NULL,
     uploaded_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Controle de uso de recursos por mês
+CREATE TABLE IF NOT EXISTS usage_tracking (
+    user_id TEXT NOT NULL,
+    feature TEXT NOT NULL,
+    period TEXT NOT NULL,
+    count INTEGER DEFAULT 0,
+    PRIMARY KEY (user_id, feature, period),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Histórico de imagens geradas com expiração automática
+CREATE TABLE IF NOT EXISTS image_history (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    image_url TEXT NOT NULL,
+    prompt TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Histórico do Exterminador de Objeções vinculado a Leads
+CREATE TABLE IF NOT EXISTS objection_history (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    lead_id TEXT,
+    image_url TEXT,
+    gargalo TEXT NOT NULL,
+    script TEXT NOT NULL,
+    missao TEXT NOT NULL,
+    created_at TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );

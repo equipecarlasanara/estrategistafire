@@ -1,0 +1,316 @@
+=== USERS TO BE DELETED (MATCHED) ===
+DELETE: DB_Name='Carla Sanara' (Email='maepragmatica@gmail.com', ID='5415f02c-7eb9-482f-b1f1-46151123efdc')
+        Matched with List: Name='Carla Sanara dos Santos Pereira Monteiro' (Email='maepragmatica@gmail.com') via email
+
+DELETE: DB_Name='Liliane Tavares Weinheimer ' (Email='lilianeweinheimer@gmail.com', ID='03783339-7aeb-4385-af50-bdb7f423a033')
+        Matched with List: Name='Liliane Tavares Weinheimer ' (Email='lilianeweinheimer@gmail.com') via email
+
+DELETE: DB_Name='Edineia Fablice Vicente' (Email='neiafabri@hotmail.com', ID='a4003cb6-96ba-49b3-9ca6-af8905c6d1ad')
+        Matched with List: Name='Edineia Fablice Vicente' (Email='neiafabri@hotmail.com') via email
+
+DELETE: DB_Name='Juliane Nascimento' (Email='julianeinascimento@gmail.com', ID='28f9138c-f842-4b75-b135-f401eab80736')
+        Matched with List: Name='Juliane Nascimento' (Email='julianeinascimento@gmail.com') via email
+
+DELETE: DB_Name='Márcia Adriana' (Email='marcia.0602@hotmail.com', ID='3c46b568-f194-46ba-b300-ef582fb64e7c')
+        Matched with List: Name='Márcia Adriana' (Email='marcia.0602@hotmail.com') via email
+
+DELETE: DB_Name='Werinton Martins' (Email='diamondgoldcursos@gmail.com', ID='c2929a6c-6c3a-475f-b305-9e11c358010e')
+        Matched with List: Name='Werinton Martins' (Email='diamondgoldcursos@gmail.com') via email
+
+DELETE: DB_Name='Thayrine Keren Lima Teixeira' (Email='karenthayrine@gmail.com', ID='bff57a20-9e1d-4019-93c7-eba93ceab45e')
+        Matched with List: Name='Thayrine Keren Lima Teixeira' (Email='karenthayrine@gmail.com') via email
+
+DELETE: DB_Name='Thaís Patricia Hammes' (Email='paty_cris18@hotmail.com', ID='dce01041-7b50-4df8-a437-e79898d2f415')
+        Matched with List: Name='Thaís Patricia Hammes' (Email='paty_cris18@hotmail.com') via email
+
+DELETE: DB_Name='Taíse Seben' (Email='taiseseben@yahoo.com.br', ID='3ec995cb-dd28-4022-8b79-66037c26b0a5')
+        Matched with List: Name='Taíse Seben' (Email='taiseseben@yahoo.com.br') via email
+
+DELETE: DB_Name='tainá natalia haack' (Email='tainahaack@gmail.com', ID='960e0200-6152-478d-a2b5-625373dcb277')
+        Matched with List: Name='tainá natalia haack' (Email='tainahaack@gmail.com') via email
+
+DELETE: DB_Name='Stephany Naves Bravos' (Email='ste.bravos@gmail.com', ID='544ac815-caa3-42e7-92f7-6cd63d588869')
+        Matched with List: Name='Stephany Naves Bravos' (Email='ste.bravos@gmail.com') via email
+
+DELETE: DB_Name='Silvana tuchtenhagen' (Email='silvanapel@hotmail.com', ID='40520722-32d6-443b-90f2-3ee6914dc95e')
+        Matched with List: Name='Silvana tuchtenhagen' (Email='silvanapel@hotmail.com') via email
+
+DELETE: DB_Name='Silvana fatima weyh' (Email='silvanaweyh31@gmail.com', ID='e1192ba7-321b-4ca1-8c03-5a03ad7c079d')
+        Matched with List: Name='Silvana fatima weyh' (Email='silvanaweyh31@gmail.com') via email
+
+DELETE: DB_Name='Shana da Costa Frainer' (Email='shanafrainer@gmail.com', ID='c7bdce43-edd6-4049-ae82-1ea799c63e64')
+        Matched with List: Name='Shana da Costa Frainer' (Email='shanafrainer@gmail.com') via email
+
+DELETE: DB_Name='Sezinanda Aline de Morais' (Email='sezinandamorais@gmail.com', ID='e5bba460-96d7-45ea-a3b3-7a8a76f5a37e')
+        Matched with List: Name='Sezinanda Aline de Morais' (Email='sezinandamorais@gmail.com') via email
+
+DELETE: DB_Name='Sabrina Pereira da Costa' (Email='contato@tuafesta.com.br', ID='9d821a5d-7b78-4243-94b4-de7610f808b5')
+        Matched with List: Name='Sabrina Pereira da Costa' (Email='contato@tuafesta.com.br') via email
+
+DELETE: DB_Name='Richele Silva da Silva' (Email='richele_ag@hotmail.com', ID='cad2f229-fc12-4d8d-91e2-ae2b6443d737')
+        Matched with List: Name='Richele Silva da Silva' (Email='richele_ag@hotmail.com') via email
+
+DELETE: DB_Name='Renata Cunha Karam' (Email='renata_karam@hotmail.com', ID='2fae7868-9c21-4fba-b23f-5f6caac45d4e')
+        Matched with List: Name='Renata Cunha Karam' (Email='renata_karam@hotmail.com') via email
+
+DELETE: DB_Name='Rayara Lengruber da silva tavares' (Email='lengruberheart@gmail.com', ID='86d3fc75-a727-4e22-8900-b903bc8e7a36')
+        Matched with List: Name='Rayara Lengruber da silva tavares' (Email='lengruberheart@gmail.com') via email
+
+DELETE: DB_Name='Raphaella Willer' (Email='barbosarapha.98@gmail.com', ID='aa17c73c-c574-49f8-b2f6-379ae32ac714')
+        Matched with List: Name='Raphaella Willer' (Email='barbosarapha.98@gmail.com') via email
+
+DELETE: DB_Name='Polianna Lazzarini' (Email='divinapolly@gmail.com', ID='6b469e14-a462-4eb7-9479-0ea645f1a66d')
+        Matched with List: Name='Polianna Lazzarini' (Email='divinapolly@gmail.com') via email
+
+DELETE: DB_Name='Nicole Hohgraefe' (Email='nicole.hohgtaefe@gmail.com', ID='e8e88d88-d1bd-4158-a08e-3c620939bedb')
+        Matched with List: Name='Nicole Hohgraefe' (Email='nicole.hohgtaefe@gmail.com') via email
+
+DELETE: DB_Name='Nathalia cristina da silva pereira' (Email='nathakiaspereira91@gmail.com', ID='50ede92e-7ed3-48a1-a31d-65abc7cfb097')
+        Matched with List: Name='Nathalia cristina da silva pereira' (Email='nathakiaspereira91@gmail.com') via email
+
+DELETE: DB_Name='Natasha M rodrigues' (Email='contadora.natasha@gmail.com', ID='d4b3dd3d-0bfd-4b98-b8db-6f58772a7ea4')
+        Matched with List: Name='Natasha M rodrigues' (Email='contadora.natasha@gmail.com') via email
+
+DELETE: DB_Name='Naiara Alves Darolt' (Email='naiaradarolt@yahoo.com', ID='6ed20cec-1326-4938-b991-f5683a6f05fa')
+        Matched with List: Name='Naiara Alves Darolt' (Email='naiaradarolt@yahoo.com') via email
+
+DELETE: DB_Name='Mirian Cricielly de Oliveira Pimentel' (Email='Polensemijoias@gmail.com', ID='109f944b-2ec9-4c3a-ab57-9932d5bd7f61')
+        Matched with List: Name='Mirian Cricielly de Oliveira Pimentel' (Email='oliveirapimentelmirian@gmail.com') via name (Exact name match)
+
+DELETE: DB_Name='Michelli Hermes Altini' (Email='michellihermes@gmail.com', ID='eb574629-7e35-43d3-91fc-37c2350cd9bc')
+        Matched with List: Name='Michelli Hermes Altini' (Email='michellihermes@gmail.com') via email
+
+DELETE: DB_Name='melyna bolze soares' (Email='bolzemelyna@gmail.com', ID='a5cef384-e07e-4b11-8374-529c37c2529e')
+        Matched with List: Name='Melyna Bolze' (Email='bolzemelyna@gmail.com') via email
+
+DELETE: DB_Name='Martilenisi M. O. moreira' (Email='mentora.martin.moreira@gmail.com', ID='26189360-05dc-47b4-977d-e8c6a111e967')
+        Matched with List: Name='Martilenisi M. O. moreira' (Email='mentora.martin.moreira@gmail.com') via email
+
+DELETE: DB_Name='Luciane Carine Kirschke Meleu' (Email='luciane.carine@gmail.com', ID='4642b8ad-3a9a-49a7-8e36-b7eef3c64648')
+        Matched with List: Name='Luciane Carine Kirschke Meleu' (Email='luciane.carine@gmail.com') via email
+
+DELETE: DB_Name='Lithiele da Silva velasques' (Email='lithy_dgv@hotmail.com', ID='5a81daa3-82a2-4d06-af5d-2ac39d772312')
+        Matched with List: Name='Lithiele da Silva velasques' (Email='lithy_dgv@hotmail.com') via email
+
+DELETE: DB_Name='Leyla Prates' (Email='pratesleyla@gmail.com', ID='5a4bf1b4-8b4a-4c76-8d94-50531824224e')
+        Matched with List: Name='Leyla Prates' (Email='pratesleyla@gmail.com') via email
+
+DELETE: DB_Name='Larissa Tonheca' (Email='larissatonheca@hotmail.com', ID='13561fe5-ec22-442e-a8dd-b3b981c4162e')
+        Matched with List: Name='Larissa Tonheca' (Email='larissatonheca@hotmail.com') via email
+
+DELETE: DB_Name='Junior Cabreira' (Email='jucabreira7@gmail.com', ID='fe60bd2b-9551-4ce7-92d0-3d539774a62d')
+        Matched with List: Name='Junior Cabreira' (Email='jucabreira7@gmail.com') via email
+
+DELETE: DB_Name='Juliana lopes almeida' (Email='Jhully-ana@oulook.com', ID='f0ed4aac-450b-4a8c-9757-ab5f66389796')
+        Matched with List: Name='Juliana lopes almeida' (Email='Jhully-ana@oulook.com') via email
+
+DELETE: DB_Name='Jucieli Lacardelli' (Email='juci@agelsci.com.br', ID='24cf550c-1dc9-4fa3-ba8c-831ffdd05b24')
+        Matched with List: Name='Jucieli Lacardelli' (Email='juci@agelsci.com.br') via email
+
+DELETE: DB_Name='Josiane Maria Silva' (Email='josy.maria.silva@hotmail.com', ID='7dc5f363-5b25-41ac-b23f-e6301bb68652')
+        Matched with List: Name='Josiane Maria Silva' (Email='josy.maria.silva@hotmail.com') via email
+
+DELETE: DB_Name='Joice Dutra' (Email='joicedutra0@gmail.com', ID='388f741b-ccd1-4fdc-a81c-f478cbd7cefc')
+        Matched with List: Name='Joice Dutra' (Email='joicedutra0@gmail.com') via email
+
+DELETE: DB_Name='Jéssica Cantini' (Email='fisio.jecantini@gmail.com', ID='b5dedfb2-716b-42ab-8a0b-83860029a762')
+        Matched with List: Name='Jéssica Cantini' (Email='fisio.jecantini@gmail.com') via email
+
+DELETE: DB_Name='Jêniffer cristina Freitas Costa' (Email='jenienadia@hotmail.com', ID='697d7480-64d0-4099-93d3-712e71218e12')
+        Matched with List: Name='Jêniffer cristina Freitas Costa' (Email='jenienadia@hotmail.com') via email
+
+DELETE: DB_Name='Jane Marcelle Nascimento Pinheiro' (Email='jmnpinheiro34@gmail.com', ID='a5d6db38-b3cd-4779-83f2-550c78b9f766')
+        Matched with List: Name='Jane Marcelle Nascimento Pinheiro' (Email='jmnpinheiro34@gmail.com') via email
+
+DELETE: DB_Name='Isabelle Justo' (Email='isabelle.justo@eaportal.org', ID='5b7e9099-fc17-4cec-9039-a7653ca9b4e9')
+        Matched with List: Name='Isabelle Justo' (Email='isabelle.justo@eaportal.org') via email
+
+DELETE: DB_Name='ISABEL CRISTINA SARAIVA FREITAS ' (Email='isabelcsfreitas@gmail.com', ID='90055def-dc74-47d2-9972-422f9ce1544e')
+        Matched with List: Name='ISABEL CRISTINA SARAIVA FREITAS ' (Email='isabelcsfreitas@gmail.com') via email
+
+DELETE: DB_Name='Giordana Rizzon de Sousa de Oliveira' (Email='gio.rizzon@gmail.com', ID='2c4242a3-f242-40df-9a4b-c84ef970a54d')
+        Matched with List: Name='Giordana Rizzon de Sousa de Oliveira' (Email='gio.rizzon@gmail.com') via email
+
+DELETE: DB_Name='Gabrielle Pereira dos santos' (Email='gabriellepereirasantos5@gmail.com', ID='5fae88a9-8988-4890-81c5-e61709f1e2a7')
+        Matched with List: Name='Gabrielle Pereira dos santos' (Email='gabriellepereirasantos5@gmail.com') via email
+
+DELETE: DB_Name='Gabriela Fonseca ' (Email='gabfonseca132@gmail.com', ID='862bb124-af08-4e56-8792-ea74d4eb49bb')
+        Matched with List: Name='Gabriela Fonseca ' (Email='gabfonseca132@gmail.com') via email
+
+DELETE: DB_Name='Flavia batista de souza' (Email='flaviasouzaunip@gmail.com', ID='1d2f9a2e-510e-4b8d-9997-b79d25521d6b')
+        Matched with List: Name='Flavia batista de souza' (Email='flaviasouzaunip@gmail.com') via email
+
+DELETE: DB_Name='Fernanda Silveira Pessel' (Email='pessel.fs@gmail.com', ID='27894710-44f9-486d-879c-3c62a675e0fa')
+        Matched with List: Name='Fernanda Silveira Pessel' (Email='pessel.fs@gmail.com') via email
+
+DELETE: DB_Name='Eliana Iohann de Siqueira' (Email='eliana.iohann@icloud.com', ID='cad4c571-997a-4e21-a650-471f214f7ddb')
+        Matched with List: Name='Eliana Iohann de Siqueira' (Email='eliana.iohann@icloud.com') via email
+
+DELETE: DB_Name='Eduardo leonir mendes da Silva ' (Email='biancabmuller@gmail.com', ID='f60e2a54-15f5-4039-ba97-c37df11bf70f')
+        Matched with List: Name='Eduardo leonir mendes da Silva ' (Email='biancabmuller@gmail.com') via email
+
+DELETE: DB_Name='Eduarda Alves Chagas' (Email='dudda.dsgn@gmail.com', ID='4da7d7ca-6c7b-438f-8b4f-b2d7415d6e7e')
+        Matched with List: Name='Eduarda Alves Chagas' (Email='dudda.dsgn@gmail.com') via email
+
+DELETE: DB_Name='Deise tamara dutra' (Email='deisetdutra@gmail.com', ID='aa031c2d-e9c0-45ce-b04f-4ae26ecd9686')
+        Matched with List: Name='Deise tamara dutra' (Email='deisetdutra@gmail.com') via email
+
+DELETE: DB_Name='Deise Ramos Py Ramos' (Email='deise_wd@hotmail.com', ID='6c5eb0e5-1607-4703-8106-e754cbfd722d')
+        Matched with List: Name='Deise Ramos Py Ramos' (Email='deise_wd@hotmail.com') via email
+
+DELETE: DB_Name='Deise de melo moraes' (Email='moraes.melo.deise@gmail.com', ID='93a427d9-8da2-4803-bb89-5ab92952d629')
+        Matched with List: Name='Deise de melo moraes' (Email='moraes.melo.deise@gmail.com') via email
+
+DELETE: DB_Name='Degliane Bernardes' (Email='deglianebernardes00@gmail.com', ID='9f677434-41ca-4447-89dc-5e513bfac6a8')
+        Matched with List: Name='Degliane Bernardes' (Email='deglianebernardes00@gmail.com') via email
+
+DELETE: DB_Name='Débora da Silva Peres' (Email='deborasipe@gmail.com', ID='442215f8-f5b2-4871-af0b-a1a671a87843')
+        Matched with List: Name='Débora da Silva Peres' (Email='deborasipe@gmail.com') via email
+
+DELETE: DB_Name='Débora Cristina Assafrão Rodrigues' (Email='assafraodebora@gmail.com', ID='cb7972cf-ab24-4999-bb75-64ac54271d5f')
+        Matched with List: Name='Débora Cristina Assafrão Rodrigues' (Email='assafraodebora@gmail.com') via email
+
+DELETE: DB_Name='Maria Alice Kanitz' (Email='mariaalicekanitz@outlook.com', ID='8dbeada2-3576-4cb5-b2ac-48e272cfbe4f')
+        Matched with List: Name='Maria Alice Kanitz' (Email='mariaalicekanitz@outlook.com') via email
+
+DELETE: DB_Name='Daniele da Conceição Vicente' (Email='danielevicente.09@outlook.com', ID='fb4e4ec1-25ee-4d9f-9821-9ff86d3f7fd3')
+        Matched with List: Name='Daniele da Conceição Vicente' (Email='danielevicente.09@outlook.com') via email
+
+DELETE: DB_Name='Daiane Fernanda Mattei Magalhães' (Email='daianemagic.1g@gmail.com', ID='6cd483bf-9253-4273-ad86-e5e8112e9b91')
+        Matched with List: Name='Daiane Fernanda Mattei Magalhães' (Email='daianemagic.1g@gmail.com') via email
+
+DELETE: DB_Name='Daiana Sueli mafra couto' (Email='dra_daiana@outlook.com', ID='6c6e3af4-a9b5-463b-898a-470a3dd664ed')
+        Matched with List: Name='Daiana Sueli mafra couto' (Email='dra_daiana@outlook.com') via email
+
+DELETE: DB_Name='Cilene Augusta da silva' (Email='cilene.augusta@icloud.com', ID='96935fdb-2b5b-4c42-984e-18a6bf092c48')
+        Matched with List: Name='Cilene Augusta da silva' (Email='cilene.augusta@icloud.com') via email
+
+DELETE: DB_Name='Carla Roberta Carvalho' (Email='carlarobertamoveis@gmail.com', ID='3969f139-40a3-4128-8e96-082629acba19')
+        Matched with List: Name='Carla Roberta Carvalho' (Email='carlarobertaimoveis@gmail.com') via name (Exact name match)
+
+DELETE: DB_Name='Carina Regina Flores Paiva Neves' (Email='carinaflores5@yahoo.com.br', ID='98c5ed3b-201f-45b1-b7d4-af45cf83b17d')
+        Matched with List: Name='Carina Regina Flores Paiva Neves' (Email='carinaflores5@yahoo.com.br') via email
+
+DELETE: DB_Name='Bruna Daniela Saraiva freitas' (Email='Brunadaniela.sf@gmail.com', ID='67c39a9e-775c-4242-9b56-af66b79ac19b')
+        Matched with List: Name='Bruna Daniela Saraiva freitas' (Email='Brunadaniela.sf@gmail.com') via email
+
+DELETE: DB_Name='Beatriz audi camara' (Email='biaaudicamara@gmail.com', ID='de5fa0fd-75cf-4bfc-b39c-5e08f7f45d48')
+        Matched with List: Name='Beatriz audi camara' (Email='biaaudicamara@gmail.com') via email
+
+DELETE: DB_Name='Ariely lamb Cardoso' (Email='ariely.lamb@hotmail.com', ID='9d465f84-741f-41ea-84d2-307d395a539c')
+        Matched with List: Name='Ariely lamb Cardoso' (Email='ariely.lamb@hotmail.com') via email
+
+DELETE: DB_Name='Angelita dos santos farias' (Email='angel.raquel13@gmail.com', ID='8ae2ae4e-ccf0-44f9-b20e-0f9815305bbd')
+        Matched with List: Name='Angelita dos santos farias' (Email='angel.raquel13@gmail.com') via email
+
+DELETE: DB_Name='Andreza Madeira trindade' (Email='andrezamadeiratrindade@gmail.com', ID='7d0ee01e-efdd-40ba-8ba5-10b7f2dd3cf5')
+        Matched with List: Name='Andreza Madeira trindade' (Email='andrezamadeiratrindade@gmail.com') via email
+
+DELETE: DB_Name='Andressa Valéria Rigotti Prestes' (Email='lotus.mk@hotmail.com', ID='bce3638e-334f-4275-9bf5-5f89829b4d07')
+        Matched with List: Name='Andressa Valéria Rigotti Prestes' (Email='lotus.mk@hotmail.com') via email
+
+DELETE: DB_Name='Andressa Hennemann de Macedo' (Email='andressa.mhenne@gmail.com', ID='4ab52191-f37d-4d70-afc5-434c31919f2c')
+        Matched with List: Name='Andressa Hennemann de Macedo' (Email='andressa.mhenne@gmail.com') via email
+
+DELETE: DB_Name='Andressa Freitas da Silva' (Email='andressaedener@gmail.com', ID='5de2b995-1adc-465d-8dd0-820ab983b621')
+        Matched with List: Name='Andressa Freitas da Silva' (Email='andressaedener@gmail.com') via email
+
+DELETE: DB_Name='Ananda Rodrigues' (Email='anandamirailh@gmail.com', ID='f363d5d4-3ccd-4645-8546-6285bedce1f4')
+        Matched with List: Name='Ananda Rodrigues' (Email='anandamirailh@gmail.com') via email
+
+DELETE: DB_Name='Ana vitoria morschbacher scalço' (Email='anamorschbachers@gmail.com', ID='c6cb34f2-20e9-4153-9631-1bb1302f5484')
+        Matched with List: Name='Ana vitoria morschbacher scalço' (Email='anamorschbachers@gmail.com') via email
+
+DELETE: DB_Name='Ana Paula Bortolon dos Santos Galbarino' (Email='anabortolon@hotmail.com', ID='587238b2-7e59-4b41-a712-4481bb596e20')
+        Matched with List: Name='Ana Paula Bortolon dos Santos Galbarino' (Email='anabortolon@hotmail.com') via email
+
+DELETE: DB_Name='Ana Flávia Pereira Miranda' (Email='flaviapereiramv@gmail.com', ID='b5047562-687a-4898-9400-d4c317e454b2')
+        Matched with List: Name='Ana Flávia Pereira Miranda' (Email='flaviapereiramv@gmail.com') via email
+
+DELETE: DB_Name='Amanda Tayne dias de almeida' (Email='amandadias.psicopp@gmail.com', ID='28223681-451c-464e-999f-6fa094b4fb62')
+        Matched with List: Name='Amanda Tayne dias de almeida' (Email='amandadias.psicopp@gmail.com') via email
+
+DELETE: DB_Name='Amanda Oliveira Scherer' (Email='amandascherer.comex@gmail.com', ID='fbacb424-fe0d-4a06-b19c-7fcfde6c8454')
+        Matched with List: Name='Amanda Oliveira Scherer' (Email='amandascherer.comex@gmail.com') via email
+
+DELETE: DB_Name='Alessandra Ribeiro Lopes Moreira Rech' (Email='alerechdesigner@icloud.com', ID='bdbdfc90-5443-4b55-bb24-73a0fde3434e')
+        Matched with List: Name='Alessandra Ribeiro Lopes Moreira Rech' (Email='alerechdesigner@icloud.com') via email
+
+DELETE: DB_Name='Adriana Marques Quintano' (Email='adrioriginalle@hotmail.com', ID='a4b81636-3d02-4600-b00f-3c024c9b59c7')
+        Matched with List: Name='Adriana Marques Quintano' (Email='adrioriginalle@hotmail.com') via email
+
+DELETE: DB_Name='Barbara da Silva Silveira ' (Email='bssilveira84@hotmail.com', ID='95cc921d-83f7-40d8-9b2b-1a550cb80633')
+        Matched with List: Name='Barbara teixeira da silva' (Email='babiteixeirak@gmail.com') via name (Shares 2 words and same first name)
+
+DELETE: DB_Name='Laura Collar Rodrigues' (Email='lauracollaradv@gmail.com', ID='75854840-1d9d-4b8a-b0c4-4b1d40cb0a48')
+        Matched with List: Name='Laura Collar Rodrigues' (Email='lauracollaradv@gmail.com') via email
+
+DELETE: DB_Name='Letícia Souza Dutra ' (Email='leticiabittencourtsouza@gmail.com', ID='f1da896b-ee7c-423b-9ab2-2536dc67f504')
+        Matched with List: Name='Letícia Souza Dutra' (Email='Leticiabittencourtsouza@gmail.com') via email
+
+DELETE: DB_Name='Amanda Bordin ' (Email='uselionessstore@gmail.com', ID='667cc133-3b57-4c99-9680-f28fff4c8072')
+        Matched with List: Name='Amanda Bordin Guerin' (Email='amandabordin15@gmail.com') via name (Name subset match)
+
+DELETE: DB_Name='Amanda Bordin Leoa2026*' (Email='Uselionessstore@gmail.com', ID='39efefc7-3f54-4717-a7d2-7166e7ad6781')
+        Matched with List: Name='Amanda Bordin Guerin' (Email='amandabordin15@gmail.com') via name (Shares 2 words and same first name)
+
+
+Total to delete: 85
+
+=== USERS TO KEEP (NO MATCH FOUND) ===
+KEEP: Name='Carla Sanara' (Email='carlasanara1@gmail.com', ID='38c47808-5aae-4ce4-b04f-1933af861ebf', Admin=1, Created=2026-05-14T00:51:45.325Z)
+KEEP: Name='Andressa Mallinsk' (Email='andressamallinsk@gmail.com', ID='45e2bbcd-2507-48d8-b8bc-7326d4af0691', Admin=1, Created=2026-05-18T21:32:25.621Z)
+KEEP: Name='Test User' (Email='test_1779308046@example.com', ID='ba21dc8f-4bc3-4665-a09d-68356a476056', Admin=0, Created=2026-05-20T20:14:06.927Z)
+KEEP: Name='Test User' (Email='test_1779308116@example.com', ID='4b947f8a-3354-47fe-a5c8-d5c14f89cbd1', Admin=0, Created=2026-05-20T20:15:15.960Z)
+KEEP: Name='Test User' (Email='test_1779308175@example.com', ID='5732db82-9263-435d-820a-a3f123cf78bf', Admin=0, Created=2026-05-20T20:16:14.962Z)
+KEEP: Name='History Test User' (Email='test_1779310252@example.com', ID='43c65345-6e69-4750-95ba-61a8c1f1a464', Admin=0, Created=2026-05-20T20:50:53.059Z)
+KEEP: Name='Image Tester' (Email='test_1779318155@example.com', ID='12b091e7-8d55-4d2e-b725-c81cff544bfd', Admin=0, Created=2026-05-20T23:02:35.235Z)
+KEEP: Name='Image Tester' (Email='test_1779318226@example.com', ID='112689ec-2e40-4666-bbda-4111b5ba7021', Admin=0, Created=2026-05-20T23:03:46.401Z)
+KEEP: Name='Image Tester' (Email='test_1779318259@example.com', ID='8dc31b5c-3321-418d-9f22-bc9cbc230ed4', Admin=0, Created=2026-05-20T23:04:19.497Z)
+KEEP: Name='Image Tester' (Email='test_1779318292@example.com', ID='a468e20f-af24-4796-8a25-8dc99827f54a', Admin=0, Created=2026-05-20T23:04:52.175Z)
+KEEP: Name='Image Tester' (Email='test_1779374210@example.com', ID='16e45c81-ee50-4c8b-8387-56ddc76a2b0b', Admin=0, Created=2026-05-21T14:36:52.075Z)
+KEEP: Name='Juliana ' (Email='contatojusdias@gmail.com', ID='5ee7da6e-c695-49ab-9efc-54b91f150c0e', Admin=0, Created=2026-05-23T14:12:14.253Z)
+KEEP: Name='Test User' (Email='test0.5116506960597088@example.com', ID='81fc2603-27bf-4b4d-992d-db513d3a17c1', Admin=0, Created=2026-05-26T17:54:45.329Z)
+KEEP: Name='History Test User' (Email='test_history0.8934536896761519@example.com', ID='c6718809-0d41-409b-8f61-b461d1b7f964', Admin=0, Created=2026-05-26T22:41:20.281Z)
+KEEP: Name='Objection Test User' (Email='test_obj0.7545071581421184@example.com', ID='ec8308ca-0bb0-41f4-a2bd-3bd67aeb10ce', Admin=0, Created=2026-05-26T22:41:31.900Z)
+KEEP: Name='Bruce Farias  ' (Email='bruce.instituto.mallinsk@gmail.com', ID='6018dd54-3c1e-4c77-9f27-fab35d9aaf28', Admin=0, Created=2026-05-27T14:27:41.020Z)
+KEEP: Name='Priscila Ávila' (Email='priscila.institutomallinsk@gmail.com', ID='d0acd0d0-6fd5-4260-9076-3073f5a65d05', Admin=1, Created=2026-05-27T19:33:17.639Z)
+KEEP: Name='Fernanda Voese Angnes' (Email='fernandavoese@gmail.com', ID='75c410bf-ad35-49c1-bfd1-9fed19fc9c50', Admin=0, Created=2026-05-28T14:40:38.919Z)
+KEEP: Name='João Vitor Carvalho dos Santos' (Email='jvc.cabelereiro@gmail.com', ID='9bdf96ad-55d1-43b9-93b7-758ea03c25f0', Admin=0, Created=2026-05-28T14:43:38.329Z)
+KEEP: Name='Steffane Pereira da Rosa ' (Email='steffanerosas@gmail.com', ID='eacb2ed4-476f-4b9a-930c-ed418a0e94b1', Admin=0, Created=2026-05-28T14:46:12.668Z)
+KEEP: Name='Juliana Gutierrez ' (Email='Julianagutierrezadm@gmail.com', ID='8ffce48d-abbd-4fe8-bc05-47a46ba1c98b', Admin=0, Created=2026-05-28T14:52:18.301Z)
+KEEP: Name='Diuvana Rocha ' (Email='diuvanarocha@educacaoemfocors.com.br', ID='24e773fd-c8e1-41d4-9961-d9fbbbac80e1', Admin=0, Created=2026-05-28T14:58:28.825Z)
+KEEP: Name='Maria Eduarda Zinn dos Santos ' (Email='zinndossantosmariaeduarda@gmail.com', ID='e16ce9ec-0d33-4d6c-8a0d-a307c0973722', Admin=0, Created=2026-05-28T15:02:49.366Z)
+KEEP: Name='Rafaela Guarin ' (Email='rafaela.guarim@gmail.com', ID='b48db13e-245a-406f-861b-0f4402f514e0', Admin=0, Created=2026-05-28T15:05:52.926Z)
+KEEP: Name='Paula Barros ' (Email='barrospaula033@gmail.com', ID='47319a25-0dc7-44d2-a1c3-088cc99de440', Admin=0, Created=2026-05-28T15:09:46.107Z)
+KEEP: Name='Renata Kelly Reis silva' (Email='Kellyreisjc@hotmail.com', ID='668511fd-fd84-40c9-9d19-2f74b03b93c5', Admin=0, Created=2026-05-28T15:14:09.439Z)
+KEEP: Name='Jaqueline Girotto Marin ' (Email='jaquelinegirottomarin@gmail.com', ID='af76e80f-5ceb-42e6-ae91-139307e21a11', Admin=0, Created=2026-05-28T15:14:37.434Z)
+KEEP: Name='Lidiane Guimaraes' (Email='Athena.consultoria.automotiva@gmail.com', ID='990c00d4-3954-4a4b-9738-b963395387d4', Admin=0, Created=2026-05-28T15:17:05.133Z)
+KEEP: Name='Loiana mesquita Pereira' (Email='Loiana_mesquita@hotmail.com', ID='7c57bd72-37d7-4571-a4d5-a57f0704811a', Admin=0, Created=2026-05-28T15:20:44.975Z)
+KEEP: Name='Aline da silva gomes' (Email='alyfitrefeicoes@outlook.com', ID='4a56f564-1179-4964-8265-cf04040f1b79', Admin=0, Created=2026-05-28T15:25:34.815Z)
+KEEP: Name='ALESSANDRA CARNEIRO DA SILVA' (Email='alecsbonfim@gmail.com', ID='8d8743a2-1153-4b9f-aa91-88b776983fcf', Admin=0, Created=2026-05-28T15:30:16.082Z)
+KEEP: Name='Natieli Ofrazia' (Email='ofrazianatieli@icloud.com', ID='d88b8264-872d-4e31-8bf0-2cbd5b3d6118', Admin=0, Created=2026-05-28T15:33:53.944Z)
+KEEP: Name='Camila Silva Oliveira ' (Email='Camilasilva201810@outlook.com', ID='00cca63c-d54c-4a75-92c7-811aa9d182d7', Admin=0, Created=2026-05-28T15:37:45.608Z)
+KEEP: Name='Letícia Souza Dutra' (Email='Leticiabittencourtsouza@gmail.com', ID='0b19dbb9-e731-40a6-90b2-cd774aad2155', Admin=0, Created=2026-05-28T15:53:11.736Z)
+KEEP: Name='Priscila ' (Email='priavilaventurini@gmail.com', ID='37555f11-73b4-4885-8312-73122def50de', Admin=0, Created=2026-05-28T17:05:40.369Z)
+KEEP: Name='Morgana de Mattos Bitencourt' (Email='desperteasuabelezamb@gmail.com', ID='4abea653-85f6-4fe9-8caa-58adea2a3283', Admin=0, Created=2026-05-28T17:27:30.180Z)
+KEEP: Name='Mariana Machado Mendes Nievinski' (Email='Mariananievinski@gmail.com', ID='71287b3f-194c-42b2-99db-7cc94912be2e', Admin=0, Created=2026-05-28T17:45:02.765Z)
+KEEP: Name='Dayane Vanessa Morais da Costa ' (Email='dayanevanessa@gmail.com', ID='0fb58fb9-d918-429f-9e12-83255dc0590c', Admin=0, Created=2026-05-28T19:38:35.718Z)
+KEEP: Name='Sara Quezia Borges Mendonça ' (Email='Saraquezia16@gmail.com', ID='24744d21-2122-4554-a1df-d0403606447e', Admin=0, Created=2026-05-28T21:20:08.856Z)
+KEEP: Name='Andréia Canuto da silva' (Email='andreiarodriguescanuto@hotmail.com', ID='8090fc7f-74ff-442d-9a72-afca66e2203e', Admin=0, Created=2026-05-28T21:21:43.942Z)
+KEEP: Name='Paula Ferreira Santa Maria ' (Email='paula@sonharesf.com', ID='523fe3aa-3055-42b9-8f8f-fff1db9adf30', Admin=0, Created=2026-05-28T21:41:29.563Z)
+KEEP: Name='Claudia Andrea Tormen ' (Email='clauperfumes00@gmail.com', ID='5e2bac79-863f-4e83-a8f8-180ab0aa4196', Admin=0, Created=2026-05-28T21:41:42.530Z)
+KEEP: Name='Amanda Goulart Rocha e Jonathan Lemos Grahl ' (Email='amandagoulartpanda@gmail.com', ID='d9a29f55-4e5f-4842-85a8-ff8f39782a8b', Admin=0, Created=2026-05-28T21:41:53.357Z)
+KEEP: Name='Priscila ' (Email='priscila.insitutomallinsk@gmail.com', ID='16d818ff-b1d0-49df-bcbb-7f8e630ccfc2', Admin=0, Created=2026-05-29T18:36:04.007Z)
+KEEP: Name='Mariana Nievinski' (Email='mariananievinski@gmail.com', ID='b426bfa0-b172-4586-8d32-b650b69a1e94', Admin=0, Created=2026-05-30T16:40:54.208Z)
+KEEP: Name='Dayane Costa ' (Email='psicologadayanecosta@gmail.com', ID='82df31ef-fc7c-46dc-b321-a3ac6b3d3d9b', Admin=0, Created=2026-05-30T17:06:25.456Z)
+KEEP: Name='Patrícia Cecília Geabra' (Email='patygeabra@icloud.com', ID='bfeccd51-4231-44fd-b49e-7ab32cd0654c', Admin=0, Created=2026-06-01T17:54:41.213Z)
+KEEP: Name='Bruna friedrich ' (Email='brunafrie.institutomallinsk@gmail.com', ID='c62b780b-10a1-4fc9-8760-ca2c0d02495e', Admin=0, Created=2026-06-02T02:27:39.102Z)
+KEEP: Name='brunafriedrich' (Email='brunafrie.institutomalisnk@gmail.com', ID='4e4a337c-9473-49bb-82e2-9a5f3843acf9', Admin=0, Created=2026-06-02T02:29:03.115Z)
+KEEP: Name='Carmen Angélica Schirmer' (Email='biomaritualite@outlook.com', ID='e60e2248-65ef-47da-b9c3-8bebca4ab09d', Admin=0, Created=2026-06-08T17:49:24.872Z)
+KEEP: Name='Jaqueline vitoria' (Email='jaqueline.institutomallinsk@gmail.com', ID='1900bee2-e97d-4f7f-810d-1243c6e9b61a', Admin=0, Created=2026-06-15T18:13:41.106Z)
+KEEP: Name='Stefani Uliana Rodrigues Ponciano ' (Email='stefani.ponci@gmail.com', ID='334ed566-f5fd-47c7-8e6a-884490a82fea', Admin=0, Created=2026-06-20T12:28:10.890Z)
+KEEP: Name='Thayrine keren lima Teixeira ' (Email='kerenthayrine@gmail.com', ID='e015ff82-324b-4e25-90a0-24aab48e5255', Admin=0, Created=2026-06-23T09:35:19.414Z)
+KEEP: Name='Jessica Grings' (Email='jessicapelloso@gmail.com', ID='bf07d925-52ab-458e-904f-5bc864d43cb5', Admin=0, Created=2026-07-09T20:02:51.751Z)
+
+Total to keep: 54

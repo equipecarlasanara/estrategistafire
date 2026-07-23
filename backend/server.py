@@ -113,6 +113,22 @@ async def startup_event():
                 if "duplicate" not in err_str and "already exists" not in err_str:
                     logger.warning(f"Erro ao adicionar coluna google_drive_link: {e}")
                     
+            # Criar tabela password_resets
+            try:
+                await db._query("""
+                CREATE TABLE IF NOT EXISTS password_resets (
+                    id TEXT PRIMARY KEY,
+                    email TEXT NOT NULL,
+                    token TEXT NOT NULL UNIQUE,
+                    expires_at TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    used BOOLEAN DEFAULT 0
+                );
+                """)
+                logger.info("Tabela password_resets verificada/criada.")
+            except Exception as e:
+                logger.error(f"Erro ao criar tabela password_resets: {e}")
+                    
             logger.info("Migrations executadas com sucesso!")
         except Exception as e:
             logger.error(f"Falha fatal ao executar migrations do banco: {e}")
@@ -151,6 +167,13 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -309,6 +332,48 @@ async def login(credentials: UserLogin):
     user = User(**user_doc)
     token = create_token(user.id)
     return TokenResponse(access_token=token, user=user)
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(req: ForgotPasswordRequest):
+    user_doc = await db.users.find_one({"email": req.email})
+    if not user_doc:
+        return {"message": "Se o e-mail existir, um link de recuperação será enviado."}
+    
+    import secrets
+    reset_token = secrets.token_urlsafe(32)
+    expires_at = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
+    
+    await db._query(
+        "INSERT INTO password_resets (id, email, token, expires_at, created_at, used) VALUES (?, ?, ?, ?, ?, 0)",
+        [str(uuid.uuid4()), req.email, reset_token, expires_at, datetime.now(timezone.utc).isoformat()]
+    )
+    
+    frontend_url = os.environ.get('FRONTEND_URL', 'https://estrategistafire.com')
+    if frontend_url.endswith('/'):
+        frontend_url = frontend_url[:-1]
+    recovery_link = f"{frontend_url}/reset-password?token={reset_token}"
+    
+    send_recovery_email(req.email, user_doc['name'], recovery_link)
+    
+    return {"message": "Se o e-mail existir, um link de recuperação será enviado."}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(req: ResetPasswordRequest):
+    res = await db._query("SELECT * FROM password_resets WHERE token = ? AND used = 0", [req.token])
+    if not res:
+        raise HTTPException(status_code=400, detail="Token inválido ou já utilizado")
+    
+    reset_doc = res[0]
+    expires_at = datetime.fromisoformat(reset_doc['expires_at'])
+    if datetime.now(timezone.utc) > expires_at:
+        raise HTTPException(status_code=400, detail="O link de recuperação expirou")
+    
+    new_hashed = hash_password(req.new_password)
+    await db.users.update_one({"email": reset_doc['email']}, {"$set": {"password": new_hashed}})
+    
+    await db._query("UPDATE password_resets SET used = 1 WHERE id = ?", [reset_doc['id']])
+    
+    return {"message": "Senha redefinida com sucesso!"}
 
 @api_router.get("/auth/me", response_model=User)
 async def get_me(user_id: str = Depends(get_current_user)):
